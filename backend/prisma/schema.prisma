@@ -1,0 +1,106 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  username     String
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  settings      UserSettings?
+  folders       Folder[]
+  notes         Note[]
+  tags          Tag[]
+  refreshTokens RefreshToken[]
+}
+
+model UserSettings {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String   @unique
+  theme     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  tokenHash String
+  expiresAt DateTime
+  device    String
+  ipAddress String
+  createdAt DateTime @default(now())
+}
+
+model Folder {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  name      String
+  parentId  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  notes Note[]
+
+  @@unique([userId, parentId, name])
+}
+
+model Note {
+  id         String    @id @default(uuid())
+  user       User      @relation(fields: [userId], references: [id])
+  userId     String
+  folder     Folder?   @relation(fields: [folderId], references: [id])
+  folderId   String?
+  title      String
+  content    String
+  isArchived Boolean   @default(false)
+  deletedAt  DateTime?
+  isFavorite Boolean   @default(false)
+  noteDate   DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  tags     NoteTag[]
+  versions NoteVersion[]
+}
+
+model Tag {
+  id     String @id @default(uuid())
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+  name   String
+
+  notes NoteTag[]
+
+  @@unique([userId, name])
+}
+
+model NoteTag {
+  note   Note   @relation(fields: [noteId], references: [id])
+  noteId String
+  tag    Tag    @relation(fields: [tagId], references: [id])
+  tagId  String
+
+  @@id([noteId, tagId])
+}
+
+model NoteVersion {
+  id        String   @id @default(uuid())
+  note      Note     @relation(fields: [noteId], references: [id])
+  noteId    String
+  title     String
+  content   String
+  createdAt DateTime @default(now())
+}
