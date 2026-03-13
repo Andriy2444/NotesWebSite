@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+    --color-purple: #A855F7;
+    --color-white: #F8FAFC;
+    --color-bg-dark: #0B0E14;
+    --color-bg-surface: #1D1028;
+
+    --color-overlay-dark: rgba(0, 0, 0, 0.65);
+    --color-white-50: rgba(248, 250, 252, 0.5);
+    --color-white-25: rgba(248, 250, 252, 0.25);
+
+    --color-surface-60: rgba(29, 16, 40, 0.6);
+    --color-surface-20: rgba(29, 16, 40, 0.2);
+}
+
+body {
+    padding: 0;
+    margin: 0;
+
+    background-image:
+            linear-gradient(rgba(29, 16, 40, 0.4), rgba(29, 16, 40, 0.4)),
+            url('../assets/background_1.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
