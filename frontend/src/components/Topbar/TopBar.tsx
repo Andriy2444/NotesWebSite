@@ -2,10 +2,14 @@ import { useState } from 'react';
 import { Menu, Search, Settings, User, X, ChevronLeft } from 'lucide-react';
 import './TopBar.css';
 
-export const TopBar = () => {
+interface TopBarProps {
+  onToggleMenu: () => void;
+}
+
+export const TopBar: React.FC<TopBarProps> = ({ onToggleMenu }) => {
   const [searchValue, setSearchValue] = useState('');
   const [isDark, setIsDark] = useState(true);
-  const [isSearchOpen, setIsSearchOpen] = useState(false); // Стан для мобільного пошуку
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const toggleTheme = () => {
     setIsDark(prev => !prev);
@@ -15,7 +19,7 @@ export const TopBar = () => {
   return (
     <header className="topbar">
       <div className={`topbar-left ${isSearchOpen ? 'hide-on-mobile' : ''}`}>
-        <button className="icon-container" title="Menu">
+        <button className="icon-container" title="Menu" onClick={onToggleMenu}>
           <Menu size={30} />
         </button>
         <div className={`search-bar ${isSearchOpen ? 'expanded' : ''}`}>

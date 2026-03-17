@@ -1,0 +1,189 @@
+.left-panel {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 25px 25px 50px;
+    gap: 20px;
+    width: 300px;
+    height: calc(100vh - 75px);
+    background: var(--color-surface-60);
+    border-width: 1px 1px 0px 0px;
+    border-style: solid;
+    border-color: var(--color-white-25);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 0px 0px 32px 0px;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+    z-index: 999;
+    transform: translateX(0);
+}
+
+.left-panel.open {
+    transform: translateX(0);
+    opacity: 1;
+    visibility: visible;
+}
+
+.left-panel.closed {
+    transform: translateX(-100%);
+    opacity: 0;
+    visibility: hidden;
+}
+
+.add-file-section {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 0;
+    gap: 25px;
+    width: 100%;
+    height: 75px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    outline: none;
+    margin-bottom: 10px;
+    justify-content: flex-start;
+}
+
+.plus-group {
+    position: relative;
+    width: 75px;
+    height: 75px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+}
+
+.plus-icon {
+    color: var(--color-purple);
+    position: relative;
+    z-index: 2;
+}
+
+.add-file-section .plus-icon,
+.add-file-section .label-text {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.add-file-section:hover .plus-icon {
+    transform: scale(1.1) rotate(90deg);
+}
+
+.add-file-section:hover .label-text {
+    transform: translateX(5px);
+    letter-spacing: 0.5px;
+    opacity: 0.8;
+}
+
+.add-file-section:active .plus-icon {
+    transform: scale(0.95);
+}
+
+.nav-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+}
+
+.nav-item {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    width: 250px;
+    height: 50px;
+    background: var(--color-bg-dark);
+    border: 1px solid var(--color-white-25);
+    border-radius: 25px;
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+}
+
+.nav-item.active {
+    background: var(--color-bg-surface);
+    border: 2px solid var(--color-purple);
+}
+
+.nav-content {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 15px;
+}
+
+.nav-icon {
+    color: var(--color-purple);
+}
+
+.label-text {
+    font-family: 'Inter', sans-serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 20px;
+    color: var(--color-purple);
+    white-space: nowrap;
+}
+
+.nav-item:hover:not(.active) {
+    border-color: var(--color-purple);
+    transform: translateX(5px);
+}
+
+@media (max-width: 768px) {
+    .left-panel {
+        width: 100%;
+        height: 100%;
+        border-radius: 0;
+        align-items: center;
+        background: var(--color-bg-dark);
+    }
+
+    .add-file-section {
+        height: auto;
+        gap: 12px;
+        align-items: center;
+        justify-content: center;
+        margin-top: 40px;
+    }
+
+    .plus-group {
+        width: 90px;
+        height: 90px;
+        margin-right: 20px;
+    }
+
+    .rectangle-bg {
+        width: 90px;
+        height: 90px;
+    }
+
+    .add-file-section .label-text {
+        font-size: 22px;
+        font-weight: 500;
+    }
+
+    .nav-menu {
+        align-items: center;
+        margin-top: 20px;
+    }
+
+    .nav-item {
+        width: 85%;
+        max-width: 320px;
+        height: 60px;
+    }
+
+    .nav-item .label-text {
+        font-size: 20px;
+        font-style: normal;
+    }
+
+    .nav-icon {
+        width: 28px;
+        height: 28px;
+    }
+}
