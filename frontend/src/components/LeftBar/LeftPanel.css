@@ -1,4 +1,7 @@
 .left-panel {
+    position: fixed;
+    top: 75px;
+    left: 0;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
@@ -16,7 +19,6 @@
     border-radius: 0px 0px 32px 0px;
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
     z-index: 999;
-    transform: translateX(0);
 }
 
 .left-panel.open {
@@ -140,6 +142,7 @@
         border-radius: 0;
         align-items: center;
         background: var(--color-bg-dark);
+        top: 64px;
     }
 
     .add-file-section {

@@ -96,7 +96,7 @@
     justify-content: flex-end;
     align-items: center;
     padding: 0 6px;
-    width: 50px;
+    width: 40px;
     height: 30px;
     background: #0B0E14;
     border-radius: 100px;
@@ -128,7 +128,6 @@
     .topbar {
         height: 64px;
         padding: 0 12px;
-        position: relative;
     }
 
     .topbar-left.active, .topbar-right.active {
