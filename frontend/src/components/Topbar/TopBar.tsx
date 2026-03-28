@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Menu, Search, Settings, User, X, ChevronLeft } from 'lucide-react';
 import './TopBar.css';
 
@@ -10,11 +11,21 @@ export const TopBar: React.FC<TopBarProps> = ({ onToggleMenu }) => {
   const [searchValue, setSearchValue] = useState('');
   const [isDark, setIsDark] = useState(true);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const navigate = useNavigate();
 
   const toggleTheme = () => {
     setIsDark(prev => !prev);
     document.body.classList.toggle('light-theme');
   };
+
+  const handleUserClick = () => {
+		const token = localStorage.getItem('accessToken');
+		if (!token) {
+			navigate('/auth');
+		} else {
+			navigate('/profile');
+		}
+	};
 
   return (
     <header className="topbar">
@@ -68,7 +79,7 @@ export const TopBar: React.FC<TopBarProps> = ({ onToggleMenu }) => {
           <Settings size={30} />
         </button>
 
-        <div className="icon-container user-avatar" onClick={() => alert('Profile')}>
+        <div className="icon-container user-avatar" onClick={handleUserClick}>
           <User size={20} />
         </div>
       </div>

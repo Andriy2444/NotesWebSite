@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { PlusCircle, FileText, Folder, Bookmark, Archive, Calendar } from 'lucide-react';
+import { PlusCircle, FileText, Folder, Bookmark, Archive, Calendar, LayoutGrid } from 'lucide-react';
 import './LeftPanel.css';
+import {useNavigate} from "react-router-dom";
 
 interface LeftPanelProps {
   isOpen: boolean;
@@ -8,14 +9,16 @@ interface LeftPanelProps {
 }
 
 export const LeftPanel: React.FC<LeftPanelProps> = ({ isOpen, onSelectMenuItem }) => {
-  const [activeItem, setActiveItem] = useState('all-notes');
+  const [activeItem, setActiveItem] = useState('all-items');
+  const navigate = useNavigate();
 
   const menuItems = [
-    { id: 'all-notes', label: 'All notes', icon: FileText },
-    { id: 'folder', label: 'Folder', icon: Folder },
-    { id: 'favorites', label: 'Favorites', icon: Bookmark },
-    { id: 'archive', label: 'Archive', icon: Archive },
-    { id: 'calendar', label: 'Calendar', icon: Calendar },
+    { id: 'all-items', label: 'All items', icon: LayoutGrid, href: '/#all-items' },
+    { id: 'notes', label: 'Notes', icon: FileText, href: '/#notes' },
+    { id: 'folder', label: 'Folder', icon: Folder, href: '/#folders' },
+    { id: 'favorites', label: 'Favorites', icon: Bookmark, href: '/#favorites' },
+    { id: 'archive', label: 'Archive', icon: Archive, href: '/#archive' },
+    { id: 'calendar', label: 'Calendar', icon: Calendar, href: '/#calendar' },
   ];
 
   return (
@@ -37,6 +40,7 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({ isOpen, onSelectMenuItem }
               onClick={() => {
                 setActiveItem(item.id);
                 onSelectMenuItem?.();
+                navigate(item.href);
               }}
             >
               <div className="nav-content">

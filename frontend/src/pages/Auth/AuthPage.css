@@ -1,0 +1,93 @@
+.auth-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: radial-gradient(circle at top right, #2e1065, #09090b); /* Глибокий фіолетовий градієнт */
+}
+
+.auth-card {
+    max-width: 450px;
+    width: 90%;
+    margin: 20px;
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+}
+
+.auth-input {
+    background: var(--color-bg-dark);
+    border: 1px solid var(--color-white-25);
+    border-radius: 12px;
+    padding: 14px;
+    color: #fff;
+    font-size: 16px;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.auth-input:focus {
+    border-color: var(--color-purple, #a855f7);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.auth-btn {
+    background: var(--color-purple, #a855f7);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 14px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.auth-btn:hover {
+    filter: brightness(1.1);
+}
+
+.auth-switch-text {
+    margin-top: 20px;
+    font-size: 14px;
+    opacity: 0.8;
+    cursor: pointer;
+}
+
+.auth-switch-text span {
+    color: var(--color-purple, #a855f7);
+    font-weight: 600;
+}
+
+.auth-grid {
+    display: flex;
+    justify-content: center;
+    margin-top: 100px;
+}
+
+.password-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.password-toggle-btn {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #ccc;
+    font-size: 14px;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}
+
+.password-toggle-btn:hover {
+    opacity: 1;
+}

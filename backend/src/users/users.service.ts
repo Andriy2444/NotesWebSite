@@ -15,6 +15,12 @@ export class UsersService {
         username: true,
         createdAt: true,
         updatedAt: true,
+        _count: {
+          select: {
+            folders: true,
+            notes: true,
+          },
+        },
       },
     });
 
