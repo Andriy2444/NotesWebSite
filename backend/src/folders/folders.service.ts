@@ -37,7 +37,23 @@ export class FoldersService {
   async findAll(userId: string) {
     return this.prisma.folder.findMany({
       where: { userId },
-      orderBy: { createdAt: 'asc' },
+      include: {
+        _count: {
+          select: { notes: true },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async findFolderNotes(userId: string, folderId: string) {
+    return this.prisma.note.findMany({
+      where: {
+        userId,
+        folderId,
+        deletedAt: null,
+      },
+      orderBy: { createdAt: 'desc' },
     });
   }
 

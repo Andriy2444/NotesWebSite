@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateNoteDto } from './dto/create-note.dto';
 import { UpdateNoteDto } from './dto/update-note.dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class NotesService {
@@ -16,9 +17,29 @@ export class NotesService {
     });
   }
 
-  async findAll(userId: string) {
+  async findAll(
+    userId: string,
+    filters: { folderId?: string; isFavorite?: boolean; isArchived?: boolean },
+  ) {
+    const where: Prisma.NoteWhereInput = { userId };
+
+    if (filters.folderId === 'null') {
+      where.folderId = null;
+    } else if (filters.folderId) {
+      where.folderId = filters.folderId;
+    }
+
+    if (filters.isFavorite) {
+      where.isFavorite = true;
+    }
+
     return this.prisma.note.findMany({
-      where: { userId, deletedAt: null },
+      where,
+      include: {
+        tags: {
+          include: { tag: true },
+        },
+      },
       orderBy: { createdAt: 'desc' },
     });
   }

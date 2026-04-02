@@ -48,6 +48,12 @@ export class FoldersController {
     return this.foldersService.findAll(req.user.id);
   }
 
+  @Get(':id/notes')
+  @ApiOperation({ summary: 'Get item from folders' })
+  findNotes(@Req() req: AuthRequest, @Param('id') id: string) {
+    return this.foldersService.findFolderNotes(req.user.id, id);
+  }
+
   @Patch(':id')
   @ApiOperation({ summary: 'Update folder' })
   @ApiParam({ name: 'id', description: 'Folder ID' })

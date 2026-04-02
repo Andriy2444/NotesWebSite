@@ -1,5 +1,5 @@
 import React, {useState, useEffect, type FormEvent} from 'react';
-import axios from 'axios';
+import {api} from '../../api';
 import {User, Mail, CalendarDays, LogOut, Edit2, Check, X, Loader2} from 'lucide-react';
 import {TopBar} from "../../components/Topbar/TopBar.tsx";
 import {LeftPanel} from "../../components/LeftBar/LeftPanel.tsx";
@@ -23,20 +23,20 @@ const ProfilePage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    if (!localStorage.getItem('refreshToken')) {
+      window.location.href = '/auth';
+      return;
+    }
     fetchProfile();
   }, []);
 
   const fetchProfile = async () => {
     try {
-      const token = localStorage.getItem('accessToken');
-      const res = await axios.get('http://localhost:3000/users/me', {
-        headers: {Authorization: `Bearer ${token}`}
-      });
+      const res = await api.get('/users/me');
       setUser(res.data);
       setNewUsername(res.data.username);
     } catch (err) {
-      console.error(err);
-      window.location.href = '/auth';
+      console.error("Profile loading failed:", err);
     } finally {
       setIsLoading(false);
     }
@@ -45,16 +45,11 @@ const ProfilePage: React.FC = () => {
   const handleUpdateUsername = async (e: FormEvent) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem('accessToken');
-      await axios.patch('http://localhost:3000/users/me',
-        {username: newUsername},
-        {headers: {Authorization: `Bearer ${token}`}}
-      );
+      await api.patch('/users/me', {username: newUsername});
       if (user) setUser({...user, username: newUsername});
       setIsEditing(false);
     } catch (err) {
       console.error(err);
-      alert("Update failed");
     }
   };
 
@@ -94,7 +89,7 @@ const ProfilePage: React.FC = () => {
                   </form>
                 ) : (
                   <div className="username-display">
-                    <h1 className="profile-username">{user?.username}</h1>
+                    <h1 className="profile-username">{user?.username || 'Loading...'}</h1>
                     <Edit2
                       size={18}
                       className="edit-icon"

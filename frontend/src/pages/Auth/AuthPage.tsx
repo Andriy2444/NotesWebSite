@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import type { ChangeEvent, FormEvent } from 'react';
+import React, {useState, useEffect} from 'react';
+import type {ChangeEvent, FormEvent} from 'react';
 import axios from 'axios';
-import { TopBar } from "../../components/Topbar/TopBar.tsx";
-import { LeftPanel } from "../../components/LeftBar/LeftPanel.tsx";
+import {api} from '../../api.ts';
+import {TopBar} from "../../components/Topbar/TopBar.tsx";
+import {LeftPanel} from "../../components/LeftBar/LeftPanel.tsx";
 import "./AuthPage.css";
 
 interface AuthFormData {
@@ -26,13 +27,32 @@ const AuthPage: React.FC = () => {
     username: ''
   });
 
+  useEffect(() => {
+    const checkAuth = async () => {
+      const refresh = localStorage.getItem('refreshToken');
+      if (refresh) {
+        setIsLoading(true);
+        try {
+          await api.get('/users/me');
+          window.location.href = '/profile';
+        } catch (err) {
+          console.error("Auto-auth failed error", err);
+          localStorage.clear();
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+    checkAuth();
+  }, []);
+
   const toggleSidebar = (): void => {
     setIsSidebarOpen(prev => !prev);
   };
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>): void => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const {name, value} = e.target;
+    setFormData(prev => ({...prev, [name]: value}));
     if (error) setError('');
   };
 
@@ -41,36 +61,29 @@ const AuthPage: React.FC = () => {
     setError('');
     setIsLoading(true);
 
-    const endpoint = isLogin ? 'login' : 'register';
-    const url = `http://localhost:3000/auth/${endpoint}`;
-
     try {
       if (!isLogin && formData.password !== formData.confirmPassword) {
         throw new Error("Passwords do not match!");
       }
 
-      const response = await axios.post(url, {
+      const endpoint = isLogin ? '/auth/login' : '/auth/register';
+      const response = await api.post(endpoint, {
         email: formData.email,
         password: formData.password,
-        ...(isLogin ? {} : { username: formData.username })
+        ...(isLogin ? {} : {username: formData.username})
       });
 
-      const { accessToken, refreshToken } = response.data;
-
+      const {accessToken, refreshToken} = response.data;
       localStorage.setItem('accessToken', accessToken);
       localStorage.setItem('refreshToken', refreshToken);
 
       window.location.href = '/profile';
-
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
         const serverMessage = err.response?.data?.message;
-        const message = Array.isArray(serverMessage) ? serverMessage[0] : serverMessage;
-        setError(message || err.message || 'Connection error');
-      } else if (err instanceof Error) {
-        setError(err.message);
+        setError(Array.isArray(serverMessage) ? serverMessage[0] : serverMessage || 'Connection error');
       } else {
-        setError('An unexpected error occurred');
+        setError(err instanceof Error ? err.message : 'An unexpected error occurred');
       }
     } finally {
       setIsLoading(false);
@@ -79,7 +92,7 @@ const AuthPage: React.FC = () => {
 
   return (
     <div>
-      <TopBar onToggleMenu={toggleSidebar} />
+      <TopBar onToggleMenu={toggleSidebar}/>
       <div className="content">
         <LeftPanel
           isOpen={isSidebarOpen}
@@ -90,12 +103,13 @@ const AuthPage: React.FC = () => {
 
         <main className={`main-content ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
           <div className="auth-grid">
-            <div className="card-box note-variant" style={{ maxWidth: '400px', height: 'fit-content', width: '90%' }}>
-              <h2 className="card-title" style={{ marginBottom: '25px' }}>
+            <div className="card-box note-variant" style={{maxWidth: '400px', height: 'fit-content', width: '90%'}}>
+              <h2 className="card-title" style={{marginBottom: '25px'}}>
                 {isLogin ? 'Sign In' : 'Sign Up'}
               </h2>
 
-              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px', width: '100%' }}>
+              <form onSubmit={handleSubmit}
+                    style={{display: 'flex', flexDirection: 'column', gap: '15px', width: '100%'}}>
                 {!isLogin && (
                   <input
                     className="auth-input"
@@ -118,7 +132,7 @@ const AuthPage: React.FC = () => {
                   required
                 />
 
-                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                <div style={{position: 'relative', display: 'flex', alignItems: 'center'}}>
                   <input
                     className="auth-input"
                     type={showPassword ? "text" : "password"}
@@ -126,7 +140,7 @@ const AuthPage: React.FC = () => {
                     placeholder="Password"
                     value={formData.password}
                     onChange={handleChange}
-                    style={{ width: '100%', paddingRight: '45px' }}
+                    style={{width: '100%', paddingRight: '45px'}}
                     required
                   />
                   <button
@@ -160,14 +174,14 @@ const AuthPage: React.FC = () => {
                 )}
 
                 {error && (
-                  <span style={{ color: '#ff4d4d', fontSize: '13px' }}>{error}</span>
+                  <span style={{color: '#ff4d4d', fontSize: '13px'}}>{error}</span>
                 )}
 
                 <button
                   type="submit"
                   className="auth-btn"
                   disabled={isLoading}
-                  style={{ opacity: isLoading ? 0.7 : 1 }}
+                  style={{opacity: isLoading ? 0.7 : 1}}
                 >
                   {isLoading ? '...' : (isLogin ? 'Login' : 'Join')}
                 </button>
@@ -179,7 +193,7 @@ const AuthPage: React.FC = () => {
                   setError('');
                   setShowPassword(false);
                 }}
-                style={{ marginTop: '20px', fontSize: '14px', cursor: 'pointer', textAlign: 'center' }}
+                style={{marginTop: '20px', fontSize: '14px', cursor: 'pointer', textAlign: 'center'}}
               >
                 {isLogin ? "New here? Register" : "Have an account? Login"}
               </p>

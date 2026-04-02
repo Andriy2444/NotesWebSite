@@ -8,6 +8,7 @@ import {
   Param,
   Req,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { NotesService } from './notes.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -41,8 +42,17 @@ export class NotesController {
 
   @Get()
   @ApiOperation({ summary: 'Get all notes' })
-  findAll(@Req() req: AuthRequest) {
-    return this.notesService.findAll(req.user.id);
+  findAll(
+    @Req() req: AuthRequest,
+    @Query('folderId') folderId?: string,
+    @Query('isFavorite') isFavorite?: string,
+    @Query('isArchived') isArchived?: string,
+  ) {
+    return this.notesService.findAll(req.user.id, {
+      folderId,
+      isFavorite: isFavorite === 'true',
+      isArchived: isArchived === 'true',
+    });
   }
 
   @Get(':id')

@@ -7,9 +7,10 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<HomePage />}></Route>
+        <Route path="/*" element={<HomePage />}></Route>
         <Route path="/auth" element={<AuthPage />}></Route>
         <Route path="/profile" element={<ProfilePage />}></Route>
+        <Route path="/folders/:folderId" element={<HomePage />} />
       </Routes>
     </BrowserRouter>
   )
