@@ -119,6 +119,21 @@
     font-size: 16px;
 }
 
+.card-text-content p {
+  margin: 0 0 6px 0;
+  color: var(--color-white);
+  font-size: 16px;
+  font-weight: 300;
+  line-height: 1.4;
+}
+
+.card-text-content h1,
+.card-text-content h2 {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
 @media (max-width: 768px) {
     .workspace-grid {
         padding: 20px;

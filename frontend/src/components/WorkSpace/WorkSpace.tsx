@@ -39,19 +39,22 @@ const MoreVert = () => (
   </button>
 );
 
-const NoteBlock: React.FC<{ data: NoteItem }> = ({data}) => {
+const NoteBlock: React.FC<{ data: NoteItem; onClick: () => void }> = ({data, onClick}) => {
   const dateStr = data.noteDate
     ? new Date(data.noteDate).toLocaleDateString('uk-UA')
     : 'Немає дати';
 
   return (
-    <div className="card-box note-variant">
+    <div className="card-box note-variant" onClick={onClick} style={{ cursor: 'pointer' }}>
       <MoreVert/>
       <h2 className="card-title">{data.title}</h2>
-      <p className="card-text-content">{data.content}</p>
+      <div
+        className="card-text-content"
+        dangerouslySetInnerHTML={{ __html: data.content }}
+      />
       <div className="card-meta-block">
         <span>📅 {dateStr}</span>
-        <span>🕒 {new Date(data.createdAt).toLocaleDateString('uk-UA')}</span>
+        <span>🕒 {new Date(data.updatedAt || data.createdAt).toLocaleDateString('uk-UA')}</span>
       </div>
       <div className="card-tags">
         {data.tags?.map((t, i) => (
@@ -202,7 +205,7 @@ export const WorkSpace: React.FC = () => {
             data={item}
             onClick={() => navigate(`/folders/${item.id}`)}
           />
-          : <NoteBlock key={item.id} data={item}/>
+          : <NoteBlock key={item.id} data={item} onClick={() => navigate(`/notes/${item.id}`)}/>
       )}
 
       <CreateModal

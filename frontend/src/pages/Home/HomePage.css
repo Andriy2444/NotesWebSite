@@ -1,17 +1,18 @@
 .page {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 .content {
-  display: flex;
-  flex: 1;
+    display: flex;
+    flex: 1;
+    overflow: hidden;
 }
 
 .work-space {
-  flex: 1;
-  background: #111;
+    flex: 1;
+    background: #111;
 }
 
 .content-wrapper {
@@ -27,18 +28,14 @@
     width: 100%;
 }
 
-/* Коли сайдбар відкритий, контент відсувається на 300px (ширина LeftPanel) */
 .main-content.sidebar-open {
     margin-left: 300px;
 }
 
-/* Коли закритий — займає весь простір */
 .main-content.sidebar-closed {
     margin-left: 0;
 }
 
-/* Адаптація для мобільних: там LeftPanel зазвичай перекриває контент (overlay),
-   тому margin-left не потрібен */
 @media (max-width: 768px) {
     .main-content.sidebar-open,
     .main-content.sidebar-closed {
