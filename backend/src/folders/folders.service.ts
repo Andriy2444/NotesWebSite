@@ -7,6 +7,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateFolderDto } from './dto/create-folder.dto';
 import { UpdateFolderDto } from './dto/update-folder.dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class FoldersService {
@@ -34,9 +35,19 @@ export class FoldersService {
     });
   }
 
-  async findAll(userId: string) {
+  async findAll(userId: string, parentId?: string | null) {
+    const where: Prisma.FolderWhereInput = { userId };
+
+    if (parentId === 'all') {
+      // no think
+    } else if (!parentId || parentId === 'null' || parentId === 'undefined') {
+      where.parentId = null;
+    } else {
+      where.parentId = parentId;
+    }
+
     return this.prisma.folder.findMany({
-      where: { userId },
+      where,
       include: {
         _count: {
           select: { notes: true },

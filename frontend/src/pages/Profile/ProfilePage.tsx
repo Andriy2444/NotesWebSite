@@ -16,7 +16,7 @@ interface UserData {
 }
 
 const ProfilePage: React.FC = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
   const [user, setUser] = useState<UserData | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [newUsername, setNewUsername] = useState('');
@@ -64,7 +64,10 @@ const ProfilePage: React.FC = () => {
     <div>
       <TopBar onToggleMenu={() => setIsSidebarOpen(!isSidebarOpen)}/>
       <div className="content">
-        <LeftPanel isOpen={isSidebarOpen}/>
+        <LeftPanel isOpen={isSidebarOpen}
+                   onSelectMenuItem={() => {
+                     if (window.innerWidth <= 768 && isSidebarOpen) setIsSidebarOpen(false);
+                   }}/>
         <main className={`main-content ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
           <div className="profile-container">
             <div className="card-box profile-main-card">

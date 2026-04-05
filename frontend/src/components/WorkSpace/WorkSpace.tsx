@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { api } from '../../api.ts';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { MoreVertical, Folder as FolderIcon, ArrowLeft } from 'lucide-react';
+import React, {useEffect, useState} from 'react';
+import {api} from '../../api.ts';
+import {useLocation, useNavigate, useParams} from 'react-router-dom';
+import {MoreVertical, Folder as FolderIcon, ArrowLeft} from 'lucide-react';
 import './WorkSpace.css';
-import { CreateModal } from "../CreateModal/CreateModal.tsx";
+import {CreateModal} from "../CreateModal/CreateModal.tsx";
 
 interface Tag {
   tag: { name: string };
@@ -35,18 +35,18 @@ type WorkspaceItem = NoteItem | FolderItem;
 
 const MoreVert = () => (
   <button className="more-vert-btn">
-    <MoreVertical size={24} />
+    <MoreVertical size={24}/>
   </button>
 );
 
-const NoteBlock: React.FC<{ data: NoteItem }> = ({ data }) => {
+const NoteBlock: React.FC<{ data: NoteItem }> = ({data}) => {
   const dateStr = data.noteDate
     ? new Date(data.noteDate).toLocaleDateString('uk-UA')
     : 'Немає дати';
 
   return (
     <div className="card-box note-variant">
-      <MoreVert />
+      <MoreVert/>
       <h2 className="card-title">{data.title}</h2>
       <p className="card-text-content">{data.content}</p>
       <div className="card-meta-block">
@@ -62,12 +62,12 @@ const NoteBlock: React.FC<{ data: NoteItem }> = ({ data }) => {
   );
 };
 
-const FolderBlock: React.FC<{ data: FolderItem; onClick: () => void }> = ({ data, onClick }) => {
+const FolderBlock: React.FC<{ data: FolderItem; onClick: () => void }> = ({data, onClick}) => {
   return (
-    <div className="card-box folder-variant" onClick={onClick} style={{ cursor: 'pointer' }}>
-      <MoreVert />
+    <div className="card-box folder-variant" onClick={onClick} style={{cursor: 'pointer'}}>
+      <MoreVert/>
       <div className="folder-icon-area">
-        <FolderIcon size={60} color="var(--color-purple)" fill="rgba(168, 85, 247, 0.2)" />
+        <FolderIcon size={60} color="var(--color-purple)" fill="rgba(168, 85, 247, 0.2)"/>
         <h2 className="card-title">{data.name}</h2>
       </div>
       <div className="card-meta-block">
@@ -85,18 +85,18 @@ export const WorkSpace: React.FC = () => {
 
   const location = useLocation();
   const navigate = useNavigate();
-  const { folderId } = useParams<{ folderId: string }>();
+  const {folderId} = useParams<{ folderId: string }>();
 
   const handleCreate = async (type: 'note' | 'folder', name: string) => {
     const endpoint = type === 'folder' ? '/folders' : '/notes';
     const payload = type === 'folder'
-      ? { name }
+      ? {name, parentId: folderId || null}
       : {
-          title: name,
-          content: '',
-          folderId: folderId || null,
-          noteDate: new Date().toISOString()
-        };
+        title: name,
+        content: '',
+        folderId: folderId || null,
+        noteDate: new Date().toISOString()
+      };
 
     try {
       await api.post(endpoint, payload);
@@ -113,26 +113,31 @@ export const WorkSpace: React.FC = () => {
         const path = location.pathname;
         const params = new URLSearchParams();
 
-        if (path === '/' || path === '/all-items') {
+        if (path === '/folders' && !folderId) {
+          params.append('parentId', 'all');
           params.append('folderId', 'null');
+        } else if (path === '/' || path === '/all-items') {
+          params.append('folderId', 'null');
+          params.append('parentId', 'null');
         } else if (folderId) {
           params.append('folderId', folderId);
+          params.append('parentId', folderId);
         } else if (path === '/favorites') {
           params.append('isFavorite', 'true');
         }
 
         const notesUrl = `/notes?${params.toString()}`;
-        const foldersUrl = '/folders';
+        const foldersUrl = `/folders?${params.toString()}`;
 
         const [notesRes, foldersRes] = await Promise.all([
           api.get<NoteItem[]>(notesUrl),
-          (path === '/' || path === '/all-items' || path === '/folders')
+          (path === '/' || path === '/all-items' || path === '/folders' || folderId)
             ? api.get<FolderItem[]>(foldersUrl)
-            : Promise.resolve({ data: [] })
+            : Promise.resolve({data: []})
         ]);
 
-        const notesData = (notesRes.data || []).map(n => ({ ...n, type: 'note' as const }));
-        const foldersData = (foldersRes.data || []).map(f => ({ ...f, type: 'folder' as const }));
+        const notesData = (notesRes.data || []).map(n => ({...n, type: 'note' as const}));
+        const foldersData = (foldersRes.data || []).map(f => ({...f, type: 'folder' as const}));
 
         let combined: WorkspaceItem[] = [];
 
@@ -168,10 +173,10 @@ export const WorkSpace: React.FC = () => {
         <div
           className="card-box folder-variant back-btn"
           onClick={() => navigate(-1)}
-          style={{ cursor: 'pointer', border: '1px solid var(--color-purple)' }}
+          style={{cursor: 'pointer', border: '1px solid var(--color-purple)'}}
         >
-          <ArrowLeft size={40} color="var(--color-purple)" />
-          <span style={{ marginTop: '10px' }}>Назад</span>
+          <ArrowLeft size={40} color="var(--color-purple)"/>
+          <span style={{marginTop: '10px'}}>Назад</span>
         </div>
       )}
 
@@ -185,18 +190,19 @@ export const WorkSpace: React.FC = () => {
         }}
         onClick={() => setIsModalOpen(true)}
       >
-        <span style={{ fontSize: '60px', color: 'var(--color-purple)', textShadow: '0 0 10px var(--color-purple)' }}>+</span>
-        <span style={{ fontWeight: 300, opacity: 0.8 }}>Add new item</span>
+        <span
+          style={{fontSize: '60px', color: 'var(--color-purple)', textShadow: '0 0 10px var(--color-purple)'}}>+</span>
+        <span style={{fontWeight: 300, opacity: 0.8}}>Add new item</span>
       </div>
 
       {items.map((item) =>
         item.type === 'folder'
           ? <FolderBlock
-              key={item.id}
-              data={item}
-              onClick={() => navigate(`/folders/${item.id}`)}
-            />
-          : <NoteBlock key={item.id} data={item} />
+            key={item.id}
+            data={item}
+            onClick={() => navigate(`/folders/${item.id}`)}
+          />
+          : <NoteBlock key={item.id} data={item}/>
       )}
 
       <CreateModal

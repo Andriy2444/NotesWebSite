@@ -8,6 +8,7 @@ import {
   Param,
   Req,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { FoldersService } from './folders.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -44,8 +45,8 @@ export class FoldersController {
 
   @Get()
   @ApiOperation({ summary: 'Get all user folders' })
-  findAll(@Req() req: AuthRequest) {
-    return this.foldersService.findAll(req.user.id);
+  findAll(@Req() req: AuthRequest, @Query('parentId') parentId?: string) {
+    return this.foldersService.findAll(req.user.id, parentId || null);
   }
 
   @Get(':id/notes')

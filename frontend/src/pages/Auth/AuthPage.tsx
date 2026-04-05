@@ -14,7 +14,7 @@ interface AuthFormData {
 }
 
 const AuthPage: React.FC = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(window.innerWidth > 768);
   const [isLogin, setIsLogin] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
@@ -97,7 +97,7 @@ const AuthPage: React.FC = () => {
         <LeftPanel
           isOpen={isSidebarOpen}
           onSelectMenuItem={() => {
-            if (window.innerWidth <= 768) setIsSidebarOpen(false);
+            if (window.innerWidth <= 768 && isSidebarOpen) setIsSidebarOpen(false);
           }}
         />
 

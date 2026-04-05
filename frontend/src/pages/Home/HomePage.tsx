@@ -5,7 +5,7 @@ import { WorkSpace } from "../../components/WorkSpace/WorkSpace.tsx";
 import "./HomePage.css"
 
 function HomePage() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(prev => !prev);
@@ -17,7 +17,7 @@ function HomePage() {
       <div className="content">
         <LeftPanel isOpen={isSidebarOpen}
                    onSelectMenuItem={() => {
-                     if (window.innerWidth <= 768) setIsSidebarOpen(false);
+                     if (window.innerWidth <= 768 && isSidebarOpen) setIsSidebarOpen(false);
                    }}/>
         <main className={`main-content ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
           <WorkSpace />
