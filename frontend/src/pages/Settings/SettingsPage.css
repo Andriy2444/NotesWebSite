@@ -1,0 +1,129 @@
+.settings-layout {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 40px 20px;
+    width: 100%;
+}
+
+.settings-card {
+    max-width: 550px !important;
+    background: var(--color-overlay-dark);
+    border: 1px solid var(--color-white-25);
+    backdrop-filter: blur(20px);
+    border-radius: 25px;
+    padding: 35px;
+    width: 100%;
+}
+
+.settings-h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--color-white);
+    font-size: 18px;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+.settings-section {
+    width: 100%;
+}
+
+/* --- THEME SELECTOR --- */
+.theme-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.theme-option {
+    background: var(--color-bg-dark);
+    border: 1px solid var(--color-white-25);
+    border-radius: 12px;
+    padding: 15px;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.theme-option:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.theme-option.active {
+    border-color: var(--color-purple, #a855f7);
+    background: rgba(168, 85, 247, 0.15);
+    box-shadow: 0 0 15px rgba(168, 85, 247, 0.2);
+}
+
+/* --- SESSIONS --- */
+.sessions-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.session-row {
+    display: flex;
+    align-items: center;
+    padding: 14px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--color-white-25);
+    border-radius: 15px;
+    gap: 15px;
+}
+
+.session-icon {
+    color: var(--color-purple, #a855f7);
+    opacity: 0.8;
+}
+
+.session-details {
+    flex: 1;
+}
+
+.session-device {
+    font-size: 15px;
+    font-weight: 500;
+    color: white;
+    margin: 0;
+}
+
+.session-meta {
+    font-size: 12px;
+    color: var(--color-white-25);
+    margin: 2px 0 0 0;
+}
+
+.session-delete-btn {
+    background: transparent;
+    border: none;
+    color: #ff4d4d;
+    cursor: pointer;
+    opacity: 0.5;
+    padding: 8px;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.session-delete-btn:hover {
+    opacity: 1;
+    background: rgba(255, 77, 77, 0.1);
+}
+
+.auth-divider {
+    height: 1px;
+    background: var(--color-white-25);
+    margin: 30px 0;
+}
+
+@media (max-width: 480px) {
+    .theme-grid {
+        grid-template-columns: 1fr;
+    }
+}

@@ -27,6 +27,15 @@ export const TopBar: React.FC<TopBarProps> = ({ onToggleMenu }) => {
 		}
 	};
 
+  const handleSettingsClick = () => {
+		const token = localStorage.getItem('accessToken');
+		if (!token) {
+			navigate('/auth');
+		} else {
+			navigate('/settings');
+		}
+	};
+
   return (
     <header className="topbar">
       <div className={`topbar-left ${isSearchOpen ? 'hide-on-mobile' : ''}`}>
@@ -75,7 +84,7 @@ export const TopBar: React.FC<TopBarProps> = ({ onToggleMenu }) => {
           <div className="switch-handle"></div>
         </div>
 
-        <button className="icon-container" title="Settings">
+        <button className="icon-container" title="Settings" onClick={handleSettingsClick}>
           <Settings size={30} />
         </button>
 

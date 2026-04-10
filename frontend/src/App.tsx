@@ -3,6 +3,7 @@ import HomePage from "./pages/Home/HomePage"
 import AuthPage from "./pages/Auth/AuthPage"
 import ProfilePage from "./pages/Profile/ProfilePage.tsx";
 import NotePage from "./pages/Note/NotePage.tsx";
+import SettingsPage from "./pages/Settings/SettingsPage.tsx";
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
         <Route path="/profile" element={<ProfilePage />}></Route>
         <Route path="/folders/:folderId" element={<HomePage />}></Route>
         <Route path="/notes/:id" element={<NotePage />}></Route>
+        <Route path="/settings" element={<SettingsPage />}></Route>
       </Routes>
     </BrowserRouter>
   )

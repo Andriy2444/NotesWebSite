@@ -10,6 +10,7 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { randomUUID } from 'crypto';
 import { Request } from 'express';
+import { UAParser } from 'ua-parser-js';
 
 @Injectable()
 export class AuthService {
@@ -32,6 +33,11 @@ export class AuthService {
         email: dto.email,
         username: dto.username,
         passwordHash: hash,
+        settings: {
+          create: {
+            theme: 'dark',
+          },
+        },
       },
     });
 
@@ -65,12 +71,25 @@ export class AuthService {
     const refreshToken = randomUUID();
     const tokenHash = await bcrypt.hash(refreshToken, 10);
 
+    let deviceName = 'Unknown Device';
+
+    if (req?.headers['user-agent']) {
+      const ua = new UAParser(req.headers['user-agent']);
+      const browser = ua.getBrowser();
+      const os = ua.getOS();
+      const device = ua.getDevice();
+
+      deviceName = device.model
+        ? `${device.vendor || ''} ${device.model} (${os.name})`
+        : `${os.name || 'Unknown OS'}, ${browser.name || 'Unknown Browser'}`;
+    }
+
     await this.prisma.refreshToken.create({
       data: {
         tokenHash,
         userId,
         expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30), // 30 днів
-        device: req?.headers['user-agent'] || 'unknown',
+        device: deviceName,
         ipAddress: req?.ip || '0.0.0.0',
       },
     });
@@ -79,6 +98,10 @@ export class AuthService {
   }
 
   async refresh(refreshToken: string, req?: Request) {
+    if (!refreshToken) {
+      throw new UnauthorizedException('Refresh token is missing');
+    }
+
     const storedTokens = await this.prisma.refreshToken.findMany({
       where: { expiresAt: { gt: new Date() } },
       include: { user: true },
@@ -124,7 +147,7 @@ export class AuthService {
 
   async sessions(userId: string) {
     return this.prisma.refreshToken.findMany({
-      where: { userId },
+      where: { userId, expiresAt: { gt: new Date() } },
       select: {
         id: true,
         device: true,
@@ -132,6 +155,7 @@ export class AuthService {
         createdAt: true,
         expiresAt: true,
       },
+      orderBy: { createdAt: 'desc' },
     });
   }
 
