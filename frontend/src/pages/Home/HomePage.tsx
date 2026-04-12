@@ -6,6 +6,7 @@ import "./HomePage.css"
 
 function HomePage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const toggleSidebar = () => {
     setIsSidebarOpen(prev => !prev);
@@ -13,14 +14,14 @@ function HomePage() {
 
   return (
     <div>
-      <TopBar onToggleMenu={toggleSidebar}/>
+      <TopBar onToggleMenu={toggleSidebar} onSearchChange={setSearchQuery}/>
       <div className="content">
         <LeftPanel isOpen={isSidebarOpen}
                    onSelectMenuItem={() => {
                      if (window.innerWidth <= 768 && isSidebarOpen) setIsSidebarOpen(false);
                    }}/>
         <main className={`main-content ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
-          <WorkSpace />
+          <WorkSpace searchQuery={searchQuery}/>
         </main>
       </div>
     </div>

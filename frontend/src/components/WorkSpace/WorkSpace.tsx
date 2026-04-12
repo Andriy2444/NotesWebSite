@@ -81,7 +81,7 @@ const FolderBlock: React.FC<{ data: FolderItem; onClick: () => void }> = ({data,
   );
 };
 
-export const WorkSpace: React.FC = () => {
+export const WorkSpace: React.FC<{ searchQuery: string }> = ({ searchQuery }) => {
   const [items, setItems] = useState<WorkspaceItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -168,6 +168,11 @@ export const WorkSpace: React.FC = () => {
     fetchWorkspaceData();
   }, [location.pathname, folderId]);
 
+  const filteredItems = items.filter(item =>
+    ('title' in item ? item.title.toLowerCase() : item.name.toLowerCase())
+      .includes(searchQuery.toLowerCase())
+  );
+
   if (loading) return <div className="loader">Loading...</div>;
 
   return (
@@ -198,7 +203,7 @@ export const WorkSpace: React.FC = () => {
         <span style={{fontWeight: 300, opacity: 0.8}}>Add new item</span>
       </div>
 
-      {items.map((item) =>
+      {filteredItems.map((item) =>
         item.type === 'folder'
           ? <FolderBlock
             key={item.id}

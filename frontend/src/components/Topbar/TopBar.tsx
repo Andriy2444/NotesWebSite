@@ -5,9 +5,10 @@ import './TopBar.css';
 
 interface TopBarProps {
   onToggleMenu: () => void;
+  onSearchChange: (value: string) => void;
 }
 
-export const TopBar: React.FC<TopBarProps> = ({ onToggleMenu }) => {
+export const TopBar: React.FC<TopBarProps> = ({ onToggleMenu, onSearchChange  }) => {
   const [searchValue, setSearchValue] = useState('');
   const [isDark, setIsDark] = useState(true);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -54,7 +55,7 @@ export const TopBar: React.FC<TopBarProps> = ({ onToggleMenu }) => {
             className="search-input"
             placeholder="Hinted search text"
             value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
+            onChange={(e) => {setSearchValue(e.target.value); onSearchChange(e.target.value);}}
           />
 
           <div className="search-icons">
@@ -62,7 +63,7 @@ export const TopBar: React.FC<TopBarProps> = ({ onToggleMenu }) => {
               <X
                 size={20}
                 className="cursor-pointer"
-                onClick={() => setSearchValue('')}
+                onClick={() => {setSearchValue(''); onSearchChange('');}}
                 color="#A855F7"
               />
             )}
