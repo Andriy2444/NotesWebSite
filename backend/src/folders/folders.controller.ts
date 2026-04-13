@@ -45,8 +45,15 @@ export class FoldersController {
 
   @Get()
   @ApiOperation({ summary: 'Get all user folders' })
-  findAll(@Req() req: AuthRequest, @Query('parentId') parentId?: string) {
-    return this.foldersService.findAll(req.user.id, parentId || null);
+  findAll(
+    @Req() req: AuthRequest,
+    @Query('parentId') parentId?: string,
+    @Query('view') view?: 'all' | 'favorites' | 'archive' | 'trash',
+  ) {
+    return this.foldersService.findAll(req.user.id, {
+      parentId,
+      view,
+    });
   }
 
   @Get(':id/notes')

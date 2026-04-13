@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateNoteDto } from './dto/create-note.dto';
 import { UpdateNoteDto } from './dto/update-note.dto';
@@ -19,18 +23,47 @@ export class NotesService {
 
   async findAll(
     userId: string,
-    filters: { folderId?: string; isFavorite?: boolean; isArchived?: boolean },
+    filters: {
+      folderId?: string;
+      view?: 'all' | 'favorites' | 'archive' | 'trash';
+    },
   ) {
     const where: Prisma.NoteWhereInput = { userId };
 
     if (filters.folderId === 'null') {
       where.folderId = null;
-    } else if (filters.folderId) {
+    } else if (filters.folderId && filters.folderId !== 'all') {
       where.folderId = filters.folderId;
+      return this.prisma.note.findMany({
+        where,
+        include: { tags: { include: { tag: true } } },
+        orderBy: { createdAt: 'desc' },
+      });
     }
 
-    if (filters.isFavorite) {
-      where.isFavorite = true;
+    switch (filters.view) {
+      case 'trash':
+        where.deletedAt = { not: null };
+        where.OR = [{ folderId: null }, { folder: { deletedAt: null } }];
+        break;
+
+      case 'archive':
+        where.deletedAt = null;
+        where.isArchived = true;
+        where.OR = [{ folderId: null }, { folder: { isArchived: false } }];
+        break;
+
+      case 'favorites':
+        where.deletedAt = null;
+        where.isFavorite = true;
+        where.OR = [{ folderId: null }, { folder: { isArchived: false } }];
+        break;
+
+      case 'all':
+      default:
+        where.deletedAt = null;
+        where.isArchived = false;
+        break;
     }
 
     return this.prisma.note.findMany({
@@ -59,34 +92,34 @@ export class NotesService {
   async update(userId: string, id: string, dto: UpdateNoteDto) {
     const note = await this.prisma.note.findUnique({ where: { id } });
 
-    if (!note || note.userId !== userId || note.deletedAt) {
+    if (!note || note.userId !== userId) {
       throw new NotFoundException('Note not found');
+    }
+
+    const { toTrash, ...rest } = dto;
+    const updateData: Prisma.NoteUpdateInput = { ...rest };
+
+    if (toTrash !== undefined) {
+      updateData.deletedAt = toTrash ? new Date() : null;
     }
 
     return this.prisma.note.update({
       where: { id },
-      data: { ...dto },
+      data: updateData,
     });
   }
 
-  async softDelete(userId: string, id: string) {
+  async delete(userId: string, id: string) {
     const note = await this.prisma.note.findUnique({ where: { id } });
 
     if (!note || note.userId !== userId) {
       throw new NotFoundException('Note not found');
     }
 
-    return this.prisma.note.update({
-      where: { id },
-      data: { deletedAt: new Date() },
-    });
-  }
-
-  async hardDelete(userId: string, id: string) {
-    const note = await this.prisma.note.findUnique({ where: { id } });
-
-    if (!note || note.userId !== userId) {
-      throw new NotFoundException('Note not found');
+    if (!note.deletedAt) {
+      throw new ForbiddenException(
+        'Note must be in trash before permanent deletion',
+      );
     }
 
     return this.prisma.note.delete({ where: { id } });

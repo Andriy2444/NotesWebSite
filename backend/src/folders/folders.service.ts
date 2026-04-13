@@ -35,24 +35,51 @@ export class FoldersService {
     });
   }
 
-  async findAll(userId: string, parentId?: string | null) {
+  async findAll(
+    userId: string,
+    filters: {
+      parentId?: string;
+      view?: 'all' | 'favorites' | 'archive' | 'trash';
+    },
+  ) {
     const where: Prisma.FolderWhereInput = { userId };
 
-    if (parentId === 'all') {
-      // no think
-    } else if (!parentId || parentId === 'null' || parentId === 'undefined') {
+    if (filters.parentId === 'null') {
       where.parentId = null;
-    } else {
-      where.parentId = parentId;
+    } else if (filters.parentId) {
+      where.parentId = filters.parentId;
+      return this.prisma.folder.findMany({
+        where,
+        include: { _count: { select: { notes: true } } },
+        orderBy: { createdAt: 'desc' },
+      });
+    }
+
+    switch (filters.view) {
+      case 'trash':
+        where.deletedAt = { not: null };
+        break;
+
+      case 'archive':
+        where.deletedAt = null;
+        where.isArchived = true;
+        break;
+
+      case 'favorites':
+        where.deletedAt = null;
+        where.isFavorite = true;
+        break;
+
+      case 'all':
+      default:
+        where.deletedAt = null;
+        where.isArchived = false;
+        break;
     }
 
     return this.prisma.folder.findMany({
       where,
-      include: {
-        _count: {
-          select: { notes: true },
-        },
-      },
+      include: { _count: { select: { notes: true } } },
       orderBy: { createdAt: 'desc' },
     });
   }
@@ -79,26 +106,42 @@ export class FoldersService {
       throw new ForbiddenException('Access denied');
     }
 
-    return this.prisma.folder.update({
-      where: { id },
-      data: { ...dto },
+    const updateData: Prisma.FolderUpdateInput = {
+      name: dto.name,
+      isFavorite: dto.isFavorite,
+      isArchived: dto.isArchived,
+    };
+
+    if (dto.toTrash !== undefined) {
+      updateData.deletedAt = dto.toTrash ? new Date() : null;
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      const updatedFolder = await tx.folder.update({
+        where: { id },
+        data: updateData,
+      });
+
+      return updatedFolder;
     });
   }
 
   async delete(userId: string, id: string) {
-    const folder = await this.prisma.folder.findUnique({
-      where: { id },
-    });
+    const folder = await this.prisma.folder.findUnique({ where: { id } });
 
     if (!folder) throw new NotFoundException('Folder not found');
+    if (folder.userId !== userId) throw new ForbiddenException('Access denied');
 
-    if (folder.userId !== userId) {
-      throw new ForbiddenException('Access denied');
+    if (!folder.deletedAt) {
+      throw new ForbiddenException(
+        'Folder must be in trash before permanent deletion',
+      );
     }
 
-    await this.prisma.folder.delete({
-      where: { id },
-    });
+    await this.prisma.$transaction([
+      this.prisma.note.deleteMany({ where: { folderId: id, userId } }),
+      this.prisma.folder.delete({ where: { id } }),
+    ]);
 
     return { message: 'Folder deleted' };
   }

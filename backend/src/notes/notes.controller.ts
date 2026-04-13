@@ -45,13 +45,11 @@ export class NotesController {
   findAll(
     @Req() req: AuthRequest,
     @Query('folderId') folderId?: string,
-    @Query('isFavorite') isFavorite?: string,
-    @Query('isArchived') isArchived?: string,
+    @Query('view') view?: 'all' | 'favorites' | 'archive' | 'trash',
   ) {
     return this.notesService.findAll(req.user.id, {
       folderId,
-      isFavorite: isFavorite === 'true',
-      isArchived: isArchived === 'true',
+      view,
     });
   }
 
@@ -74,17 +72,9 @@ export class NotesController {
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Soft delete note by id' })
-  @ApiParam({ name: 'id', description: 'Note ID' })
-  softDelete(@Req() req: AuthRequest, @Param('id') id: string) {
-    return this.notesService.softDelete(req.user.id, id);
-  }
-
-  @Delete(':id/permanent')
-  @ApiOperation({ summary: 'Hard delete note by id' })
-  @ApiParam({ name: 'id', description: 'Note ID' })
-  hardDelete(@Req() req: AuthRequest, @Param('id') id: string) {
-    return this.notesService.hardDelete(req.user.id, id);
+  @ApiOperation({ summary: 'Permanently delete note' })
+  delete(@Req() req: AuthRequest, @Param('id') id: string) {
+    return this.notesService.delete(req.user.id, id);
   }
 
   @Get('calendar')

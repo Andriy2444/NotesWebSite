@@ -1,5 +1,5 @@
 import React from 'react';
-import { PlusCircle, FileText, Folder, Bookmark, Archive, Calendar, LayoutGrid } from 'lucide-react';
+import {PlusCircle, Bookmark, Archive, Calendar, LayoutGrid, Trash2} from 'lucide-react';
 import './LeftPanel.css';
 import { useNavigate, useLocation } from "react-router-dom";
 
@@ -13,20 +13,27 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({ isOpen, onSelectMenuItem, 
   const navigate = useNavigate();
   const location = useLocation();
 
-  const menuItems = [
-    { id: 'all-items', label: 'All items', icon: LayoutGrid, href: '/' },
-    { id: 'notes', label: 'Notes', icon: FileText, href: '/notes' },
-    { id: 'folders', label: 'Folders', icon: Folder, href: '/folders' },
-    { id: 'favorites', label: 'Favorites', icon: Bookmark, href: '/favorites' },
-    { id: 'archive', label: 'Archive', icon: Archive, href: '/archive' },
-    { id: 'calendar', label: 'Calendar', icon: Calendar, href: '/calendar' },
-  ];
+const menuItems = [
+  { id: 'all-items', label: 'All items', icon: LayoutGrid, href: '/?view=all' },
+  { id: 'favorites', label: 'Favorites', icon: Bookmark, href: '/?view=favorites' },
+  { id: 'archive', label: 'Archive', icon: Archive, href: '/?view=archive' },
+  { id: 'trash', label: 'Trash', icon: Trash2, href: '/?view=trash' },
+  { id: 'calendar', label: 'Calendar', icon: Calendar, href: '/calendar' },
+];
 
   const getActiveItem = () => {
     const path = location.pathname;
-    if (path === '/') return 'all-items';
-    const item = menuItems.find(m => m.href !== '/' && path.startsWith(m.href));
-    return item ? item.id : 'all-items';
+    const view = new URLSearchParams(location.search).get('view') || 'all';
+
+    if (path.startsWith('/calendar')) return 'calendar';
+    if (path.startsWith('/folders')) return 'all-items';
+
+    switch (view) {
+      case 'favorites': return 'favorites';
+      case 'archive':   return 'archive';
+      case 'trash':     return 'trash';
+      default:          return 'all-items';
+    }
   };
 
   const activeItem = getActiveItem();

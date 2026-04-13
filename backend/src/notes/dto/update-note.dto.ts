@@ -49,4 +49,12 @@ export class UpdateNoteDto {
   @IsOptional()
   @IsDateString()
   noteDate?: string;
+
+  @ApiPropertyOptional({
+    example: true,
+    description: 'Move to trash (true) or restore (false)',
+  })
+  @IsOptional()
+  @IsBoolean()
+  toTrash?: boolean;
 }
