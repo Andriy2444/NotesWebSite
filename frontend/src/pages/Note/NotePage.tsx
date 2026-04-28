@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useEditor, EditorContent } from '@tiptap/react';
+import TextAlign from '@tiptap/extension-text-align';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import { api } from '../../api';
 import { TopBar } from "../../components/Topbar/TopBar.tsx";
 import { LeftPanel } from "../../components/LeftBar/LeftPanel.tsx";
+import { RightPanel } from "../../components/RightPanel/RightPanel.tsx";
 import "./NotePage.css";
 
 interface NoteData {
@@ -21,13 +23,17 @@ const NotePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
   const [noteData, setNoteData] = useState<NoteData | null>(null);
+  const [isRightPanelOpen, setIsRightPanelOpen] = useState(false);
 
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const editor = useEditor({
     extensions: [
       StarterKit,
-      Placeholder.configure({ placeholder: 'Start writing...' }),
+      Placeholder.configure({ placeholder: 'Start writing...', emptyEditorClass: 'is-editor-empty' }),
+      TextAlign.configure({
+        types: ['heading', 'paragraph'],
+      }),
     ],
     content: '',
     onUpdate: ({ editor }) => {
@@ -92,7 +98,7 @@ const NotePage: React.FC = () => {
 
   return (
     <div className="page-wrapper">
-      <TopBar onToggleMenu={toggleSidebar} />
+      <TopBar onToggleMenu={toggleSidebar} onSearchChange={() => {}}  />
 
       <div className="content">
         <LeftPanel
@@ -137,9 +143,15 @@ const NotePage: React.FC = () => {
                 </div>
 
                 <EditorContent editor={editor} className="tiptap-renderer" />
-
               </div>
             </div>
+              <button
+                className="right-panel-toggle"
+                onClick={() => setIsRightPanelOpen(prev => !prev)}
+              >
+                f
+              </button>
+            <RightPanel editor={editor} isOpen={isRightPanelOpen}/>
           </div>
         </main>
       </div>

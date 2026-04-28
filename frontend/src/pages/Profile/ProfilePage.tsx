@@ -62,7 +62,7 @@ const ProfilePage: React.FC = () => {
 
   return (
     <div>
-      <TopBar onToggleMenu={() => setIsSidebarOpen(!isSidebarOpen)}/>
+      <TopBar onToggleMenu={() => setIsSidebarOpen(!isSidebarOpen)} onSearchChange={() => {}}/>
       <div className="content">
         <LeftPanel isOpen={isSidebarOpen}
                    onSelectMenuItem={() => {

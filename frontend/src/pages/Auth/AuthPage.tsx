@@ -92,7 +92,7 @@ const AuthPage: React.FC = () => {
 
   return (
     <div>
-      <TopBar onToggleMenu={toggleSidebar}/>
+      <TopBar onToggleMenu={toggleSidebar} onSearchChange={() => {}}/>
       <div className="content">
         <LeftPanel
           isOpen={isSidebarOpen}
