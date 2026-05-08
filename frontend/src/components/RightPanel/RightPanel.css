@@ -75,7 +75,6 @@
     opacity: 0.8;
 }
 
-/* --- ВІДШТОВХУЄМО МЕНЮ ВЛІВО --- */
 .sub-menu {
     box-sizing: border-box;
     display: flex;
@@ -86,7 +85,6 @@
 
     position: absolute;
     width: 50px;
-    height: 140px;
     right: calc(100% + 10px);
     top: 0;
 
@@ -148,6 +146,65 @@
     border: 1px solid var(--color-white-25);
     font-size: 20px;
     cursor: pointer;
+}
+
+.color-circle-btn {
+    height: 16px;
+    width: 16px;
+}
+
+.ProseMirror a {
+  color: var(--color-purple);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.ProseMirror table {
+  border-collapse: collapse;
+  margin: 0;
+  overflow: hidden;
+  table-layout: fixed;
+  width: 100%;
+}
+
+.ProseMirror td, .ProseMirror th {
+  border: 1px solid var(--color-white-25);
+  box-sizing: border-box;
+  min-width: 1em;
+  padding: 3px 5px;
+  position: relative;
+  vertical-align: top;
+}
+
+.table-menu {
+    min-width: 100px;
+}
+
+.ProseMirror table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+.ProseMirror td,
+.ProseMirror th {
+  min-width: 1em;
+  border: 2px solid var(--color-white-50);
+  padding: 3px 5px;
+  vertical-align: top;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.ProseMirror .selectedCell:after {
+  background: rgba(168, 85, 247, 0.1);
+  content: "";
+  left: 0; right: 0; top: 0; bottom: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: 2;
 }
 
 

@@ -4,11 +4,15 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import TextAlign from '@tiptap/extension-text-align';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
+import { Color } from "@tiptap/extension-text-style";
+import { TextStyle } from '@tiptap/extension-text-style'
 import { api } from '../../api';
 import { TopBar } from "../../components/Topbar/TopBar.tsx";
 import { LeftPanel } from "../../components/LeftBar/LeftPanel.tsx";
 import { RightPanel } from "../../components/RightPanel/RightPanel.tsx";
 import "./NotePage.css";
+import {Table, TableCell, TableHeader, TableRow} from "@tiptap/extension-table";
+import Link from "@tiptap/extension-link";
 
 interface NoteData {
   id: string;
@@ -34,11 +38,21 @@ const NotePage: React.FC = () => {
       TextAlign.configure({
         types: ['heading', 'paragraph'],
       }),
+      Color,
+      TextStyle,
+      Table.configure({
+        resizable: true,
+      }),
+      TableRow,
+      TableHeader,
+      TableCell,
+      Link,
     ],
     content: '',
     onUpdate: ({ editor }) => {
       handleAutoSave(editor.getHTML());
     },
+    onSelectionUpdate: () => {}
   });
 
   const handleAutoSave = useCallback(
