@@ -10,14 +10,8 @@ interface TopBarProps {
 
 export const TopBar: React.FC<TopBarProps> = ({ onToggleMenu, onSearchChange  }) => {
   const [searchValue, setSearchValue] = useState('');
-  const [isDark, setIsDark] = useState(true);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const navigate = useNavigate();
-
-  const toggleTheme = () => {
-    setIsDark(prev => !prev);
-    document.body.classList.toggle('light-theme');
-  };
 
   const handleUserClick = () => {
 		const token = localStorage.getItem('accessToken');
@@ -78,17 +72,9 @@ export const TopBar: React.FC<TopBarProps> = ({ onToggleMenu, onSearchChange  })
       </div>
 
       <div className={`topbar-right ${isSearchOpen ? 'hide-on-mobile' : ''}`}>
-        <div
-          className={`switch-toggle ${!isDark ? 'active' : ''}`}
-          onClick={toggleTheme}
-        >
-          <div className="switch-handle"></div>
-        </div>
-
         <button className="icon-container" title="Settings" onClick={handleSettingsClick}>
           <Settings size={30} />
         </button>
-
         <div className="icon-container user-avatar" onClick={handleUserClick}>
           <User size={20} />
         </div>

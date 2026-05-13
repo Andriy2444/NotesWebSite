@@ -4,8 +4,30 @@ import AuthPage from "./pages/Auth/AuthPage"
 import ProfilePage from "./pages/Profile/ProfilePage.tsx";
 import NotePage from "./pages/Note/NotePage.tsx";
 import SettingsPage from "./pages/Settings/SettingsPage.tsx";
+import {useEffect} from "react";
+import {api} from "./api.ts";
 
 function App() {
+  useEffect(() => {
+    const initTheme = async () => {
+      try {
+        const res = await api.get('/settings');
+        const theme = res.data.theme || 'dark';
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+      } catch (err) {
+        console.error("Failed to fetch theme", err);
+      }
+    };
+
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    }
+
+    initTheme();
+  }, []);
+
   return (
     <BrowserRouter>
       <Routes>

@@ -19,7 +19,7 @@
     padding: 25px 25px 15px;
     display: flex;
     flex-direction: column;
-    gap: 25px;
+    gap: 5px;
     isolation: isolate;
     border-radius: 25px;
     box-sizing: border-box;
@@ -109,6 +109,37 @@
     line-height: 24px;
     color: var(--color-white);
     margin-bottom: 15px;
+}
+
+.back-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    border: none;
+    color: var(--color-white);
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.2s ease, transform 0.2s ease;
+    width: fit-content;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.back-button:hover {
+    color: var(--color-purple);
+    transform: translateX(-3px);
+}
+
+.back-button svg {
+    transition: transform 0.2s ease;
+}
+
+.note-top-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
 }
 
 @media (max-width: 768px) {

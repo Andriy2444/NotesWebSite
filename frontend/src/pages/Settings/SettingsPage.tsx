@@ -41,6 +41,12 @@ const SettingsPage: React.FC = () => {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    if (settings?.theme) {
+      document.documentElement.setAttribute('data-theme', settings.theme);
+    }
+  }, [settings]);
+
   const terminateSession = async (id: string) => {
     try {
       await api.delete(`/auth/sessions/${id}`);
@@ -55,7 +61,8 @@ const SettingsPage: React.FC = () => {
     try {
       const res = await api.patch<UserSettings>('/settings', { theme });
       setSettings(res.data);
-      document.body.setAttribute('data-theme', theme);
+      document.documentElement  .setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
     } catch (err) {
       console.error("Theme update error:", err);
     }
@@ -67,7 +74,7 @@ const SettingsPage: React.FC = () => {
 
   return (
     <div className="page-wrapper">
-      <TopBar onToggleMenu={toggleSidebar} />
+      <TopBar onToggleMenu={toggleSidebar} onSearchChange={() => {}} />
       <div className="content">
         <LeftPanel
           isOpen={isSidebarOpen}

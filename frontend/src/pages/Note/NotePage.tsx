@@ -1,18 +1,19 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useParams } from 'react-router-dom';
-import { useEditor, EditorContent } from '@tiptap/react';
+import React, {useState, useEffect, useCallback, useRef} from 'react';
+import {useNavigate, useParams} from 'react-router-dom';
+import {useEditor, EditorContent} from '@tiptap/react';
 import TextAlign from '@tiptap/extension-text-align';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
-import { Color } from "@tiptap/extension-text-style";
-import { TextStyle } from '@tiptap/extension-text-style'
-import { api } from '../../api';
-import { TopBar } from "../../components/Topbar/TopBar.tsx";
-import { LeftPanel } from "../../components/LeftBar/LeftPanel.tsx";
-import { RightPanel } from "../../components/RightPanel/RightPanel.tsx";
+import {Color} from "@tiptap/extension-text-style";
+import {TextStyle} from '@tiptap/extension-text-style'
+import {api} from '../../api';
+import {TopBar} from "../../components/Topbar/TopBar.tsx";
+import {LeftPanel} from "../../components/LeftBar/LeftPanel.tsx";
+import {RightPanel} from "../../components/RightPanel/RightPanel.tsx";
 import "./NotePage.css";
 import {Table, TableCell, TableHeader, TableRow} from "@tiptap/extension-table";
 import Link from "@tiptap/extension-link";
+import {ArrowLeft} from "lucide-react";
 
 interface NoteData {
   id: string;
@@ -24,17 +25,18 @@ interface NoteData {
 }
 
 const NotePage: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const {id} = useParams<{ id: string }>();
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
   const [noteData, setNoteData] = useState<NoteData | null>(null);
   const [isRightPanelOpen, setIsRightPanelOpen] = useState(false);
+  const navigate = useNavigate();
 
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const editor = useEditor({
     extensions: [
       StarterKit,
-      Placeholder.configure({ placeholder: 'Start writing...', emptyEditorClass: 'is-editor-empty' }),
+      Placeholder.configure({placeholder: 'Start writing...', emptyEditorClass: 'is-editor-empty'}),
       TextAlign.configure({
         types: ['heading', 'paragraph'],
       }),
@@ -49,10 +51,11 @@ const NotePage: React.FC = () => {
       Link,
     ],
     content: '',
-    onUpdate: ({ editor }) => {
+    onUpdate: ({editor}) => {
       handleAutoSave(editor.getHTML());
     },
-    onSelectionUpdate: () => {}
+    onSelectionUpdate: () => {
+    }
   });
 
   const handleAutoSave = useCallback(
@@ -62,7 +65,7 @@ const NotePage: React.FC = () => {
       saveTimeoutRef.current = setTimeout(async () => {
         if (id) {
           try {
-            await api.patch(`/notes/${id}`, { content });
+            await api.patch(`/notes/${id}`, {content});
           } catch (err) {
             console.error("Save error:", err);
           }
@@ -104,7 +107,7 @@ const NotePage: React.FC = () => {
   const handleTitleBlur = async () => {
     if (!id || !noteData) return;
     try {
-      await api.patch(`/notes/${id}`, { title: noteData.title });
+      await api.patch(`/notes/${id}`, {title: noteData.title});
     } catch (err) {
       console.error("Title save error:", err);
     }
@@ -112,7 +115,8 @@ const NotePage: React.FC = () => {
 
   return (
     <div className="page-wrapper">
-      <TopBar onToggleMenu={toggleSidebar} onSearchChange={() => {}}  />
+      <TopBar onToggleMenu={toggleSidebar} onSearchChange={() => {
+      }}/>
 
       <div className="content">
         <LeftPanel
@@ -123,6 +127,22 @@ const NotePage: React.FC = () => {
         <main className={`main-content ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
           <div className="note-layout-container">
             <div className="file-editor">
+              <div className="note-top-nav">
+                <button className="back-button" onClick={() => navigate(-1)}>
+                  <ArrowLeft size={20}/>
+                  <span>Back</span>
+                </button>
+                <div className="note-info">
+                  <span>
+                    Date: {noteData?.noteDate
+                    ? new Date(noteData.noteDate).toLocaleDateString('uk-UA')
+                    : (noteData ? new Date(noteData.createdAt).toLocaleDateString('uk-UA') : '...')}
+                  </span>
+                  <span>
+                    Updated: {noteData ? new Date(noteData.updatedAt).toLocaleDateString('uk-UA') : '...'}
+                  </span>
+                </div>
+              </div>
               <div className="note-content-scrollable">
 
                 <div className="note-header">
@@ -132,7 +152,7 @@ const NotePage: React.FC = () => {
                     rows={1}
                     value={noteData?.title ?? ""}
                     onChange={e => {
-                      setNoteData(prev => prev ? { ...prev, title: e.target.value } : prev);
+                      setNoteData(prev => prev ? {...prev, title: e.target.value} : prev);
                       e.target.style.height = 'auto';
                       e.target.style.height = `${e.target.scrollHeight}px`;
                     }}
@@ -143,28 +163,17 @@ const NotePage: React.FC = () => {
                       }
                     }}
                   />
-
-                  <div className="note-info">
-                    <span>
-                      Date: {noteData?.noteDate
-                        ? new Date(noteData.noteDate).toLocaleDateString('uk-UA')
-                        : (noteData ? new Date(noteData.createdAt).toLocaleDateString('uk-UA') : '...')}
-                    </span>
-                    <span>
-                      Updated: {noteData ? new Date(noteData.updatedAt).toLocaleDateString('uk-UA') : '...'}
-                    </span>
-                  </div>
                 </div>
 
-                <EditorContent editor={editor} className="tiptap-renderer" />
+                <EditorContent editor={editor} className="tiptap-renderer"/>
               </div>
             </div>
-              <button
-                className="right-panel-toggle"
-                onClick={() => setIsRightPanelOpen(prev => !prev)}
-              >
-                f
-              </button>
+            <button
+              className="right-panel-toggle"
+              onClick={() => setIsRightPanelOpen(prev => !prev)}
+            >
+              f
+            </button>
             <RightPanel editor={editor} isOpen={isRightPanelOpen}/>
           </div>
         </main>

@@ -1,5 +1,5 @@
 import React from 'react';
-import {PlusCircle, Bookmark, Archive, Calendar, LayoutGrid, Trash2} from 'lucide-react';
+import {Bookmark, Archive, Calendar, LayoutGrid, Trash2} from 'lucide-react';
 import './LeftPanel.css';
 import { useNavigate, useLocation } from "react-router-dom";
 
@@ -9,7 +9,7 @@ interface LeftPanelProps {
   onAddNew?: () => void;
 }
 
-export const LeftPanel: React.FC<LeftPanelProps> = ({ isOpen, onSelectMenuItem, onAddNew }) => {
+export const LeftPanel: React.FC<LeftPanelProps> = ({ isOpen, onSelectMenuItem }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -40,13 +40,6 @@ const menuItems = [
 
   return (
     <aside className={`left-panel ${isOpen ? 'open' : 'closed'}`}>
-      <button className="add-file-section" onClick={onAddNew}>
-        <div className="plus-group">
-          <PlusCircle className="plus-icon" size={75} strokeWidth={1.5} />
-        </div>
-        <span className="label-text">Add new file</span>
-      </button>
-
       <nav className="nav-menu">
         {menuItems.map((item) => {
           const Icon = item.icon;
