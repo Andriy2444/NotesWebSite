@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {api} from '../../api.ts';
 import {useLocation, useNavigate, useParams} from 'react-router-dom';
-import {MoreVertical, Folder as FolderIcon, ArrowLeft, Star, Archive, Trash2, RotateCcw} from 'lucide-react';
+import {MoreVertical, Folder as FolderIcon, ArrowLeft, Star, Archive, Trash2, RotateCcw, SlidersHorizontal} from 'lucide-react';
 import './WorkSpace.css';
 import {CreateModal} from "../CreateModal/CreateModal.tsx";
 
@@ -165,7 +165,7 @@ const FolderBlock: React.FC<{
       <h2 className="card-title">{data.name}</h2>
     </div>
     <div className="card-meta-block">
-      <span>🕒 {new Date(data.createdAt).toLocaleDateString('uk-UA')}</span>
+      <span>📅 {new Date(data.createdAt).toLocaleDateString('uk-UA')}</span>
       <span>📄 {data._count?.notes || 0} notes</span>
     </div>
   </div>
@@ -176,7 +176,9 @@ export const WorkSpace: React.FC<{ searchQuery: string }> = ({ searchQuery }) =>
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<{ id: string; type: 'note' | 'folder'; name: string } | null>(null);
-
+  const [filterType, setFilterType] = useState<'all' | 'folders' | 'notes'>('all');
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [sortBy, setSortBy] = useState<'date' | 'type'>('type');
   const location = useLocation();
   const navigate = useNavigate();
   const { folderId } = useParams<{ folderId: string }>();
@@ -271,70 +273,137 @@ export const WorkSpace: React.FC<{ searchQuery: string }> = ({ searchQuery }) =>
     }
   };
 
-  const filteredItems = items.filter(item =>
-    ('title' in item ? item.title : item.name)
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase())
-  );
+  const filteredItems = items
+    .filter(item =>
+      ('title' in item ? item.title : item.name)
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase())
+    )
+    .filter(item => {
+      if (filterType === 'folders') return item.type === 'folder';
+      if (filterType === 'notes') return item.type === 'note';
+      return true;
+    })
+    .sort((a, b) => {
+      if (sortBy === 'type') {
+        if (a.type === 'folder' && b.type === 'note') return -1;
+        if (a.type === 'note' && b.type === 'folder') return 1;
+      }
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
 
   if (loading) return <div className="loader">Loading...</div>;
 
   return (
-    <div className="workspace-grid">
-      {confirmDelete && (
-        <ConfirmModal
-          title="Delete permanently?"
-          message={`"${confirmDelete.name}" will be deleted forever.`}
-          onConfirm={handleConfirmDelete}
-          onCancel={() => setConfirmDelete(null)}
+    <div className="workspace-wrapper">
+      <div className="workspace-filter-container">
+        <button
+          className={`filter-toggle-btn ${isFilterOpen ? 'active' : ''}`}
+          onClick={() => setIsFilterOpen(!isFilterOpen)}
+        >
+          <SlidersHorizontal size={20} />
+          <span>Filter</span>
+        </button>
+
+        {isFilterOpen && (
+          <>
+            <div className="filter-backdrop" onClick={() => setIsFilterOpen(false)} />
+            <div className="glass-filter-menu">
+              <div className="filter-menu-section-title">Filter by</div>
+              <div
+                className={`filter-item ${filterType === 'all' ? 'selected' : ''}`}
+                onClick={() => { setFilterType('all'); setIsFilterOpen(false); }}
+              >
+                All Items
+              </div>
+              <div
+                className={`filter-item ${filterType === 'folders' ? 'selected' : ''}`}
+                onClick={() => { setFilterType('folders'); setIsFilterOpen(false); }}
+              >
+                Folders Only
+              </div>
+              <div
+                className={`filter-item ${filterType === 'notes' ? 'selected' : ''}`}
+                onClick={() => { setFilterType('notes'); setIsFilterOpen(false); }}
+              >
+                Notes Only
+              </div>
+
+              <div className="filter-menu-divider" />
+
+              <div className="filter-menu-section-title">Sort by</div>
+              <div
+                className={`filter-item ${sortBy === 'type' ? 'selected' : ''}`}
+                onClick={() => { setSortBy('type'); setIsFilterOpen(false); }}
+              >
+                Folders First
+              </div>
+              <div
+                className={`filter-item ${sortBy === 'date' ? 'selected' : ''}`}
+                onClick={() => { setSortBy('date'); setIsFilterOpen(false); }}
+              >
+                By Date Created
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+      <div className="workspace-grid">
+        {confirmDelete && (
+          <ConfirmModal
+            title="Delete permanently?"
+            message={`"${confirmDelete.name}" will be deleted forever.`}
+            onConfirm={handleConfirmDelete}
+            onCancel={() => setConfirmDelete(null)}
+          />
+        )}
+
+        {folderId && (
+          <div
+            className="card-box folder-variant back-btn"
+            onClick={() => navigate(-1)}
+            style={{ cursor: 'pointer', border: '1px solid var(--color-purple)' }}
+          >
+            <ArrowLeft size={40} color="var(--color-purple)"/>
+            <span style={{ marginTop: '10px' }}>Back</span>
+          </div>
+        )}
+
+        {view === 'all' && (
+          <div
+            className="card-box note-variant"
+            style={{ border: '2px dashed var(--color-white-25)', cursor: 'pointer', justifyContent: 'center', alignItems: 'center' }}
+            onClick={() => setIsModalOpen(true)}
+          >
+            <span style={{ fontSize: '60px', color: 'var(--color-purple)', textShadow: '0 0 10px var(--color-purple)' }}>+</span>
+            <span style={{ fontWeight: 300, opacity: 0.8 }}>Add new item</span>
+          </div>
+        )}
+
+        {filteredItems.map(item =>
+          item.type === 'folder'
+            ? <FolderBlock
+                key={item.id}
+                data={item as FolderItem}
+                onClick={() => navigate(`/folders/${item.id}?view=${view}`)}
+                onAction={(id, action) => handleItemAction(id, 'folder', action)}
+                view={view}
+              />
+            : <NoteBlock
+                key={item.id}
+                data={item as NoteItem}
+                onClick={() => navigate(`/notes/${item.id}?view=${view}`)}
+                onAction={(id, action) => handleItemAction(id, 'note', action)}
+                view={view}
+              />
+        )}
+
+        <CreateModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onCreate={handleCreate}
         />
-      )}
-
-      {folderId && (
-        <div
-          className="card-box folder-variant back-btn"
-          onClick={() => navigate(-1)}
-          style={{ cursor: 'pointer', border: '1px solid var(--color-purple)' }}
-        >
-          <ArrowLeft size={40} color="var(--color-purple)"/>
-          <span style={{ marginTop: '10px' }}>Back</span>
-        </div>
-      )}
-
-      {view === 'all' && (
-        <div
-          className="card-box note-variant"
-          style={{ border: '2px dashed var(--color-white-25)', cursor: 'pointer', justifyContent: 'center', alignItems: 'center' }}
-          onClick={() => setIsModalOpen(true)}
-        >
-          <span style={{ fontSize: '60px', color: 'var(--color-purple)', textShadow: '0 0 10px var(--color-purple)' }}>+</span>
-          <span style={{ fontWeight: 300, opacity: 0.8 }}>Add new item</span>
-        </div>
-      )}
-
-      {filteredItems.map(item =>
-        item.type === 'folder'
-          ? <FolderBlock
-              key={item.id}
-              data={item as FolderItem}
-              onClick={() => navigate(`/folders/${item.id}?view=${view}`)}
-              onAction={(id, action) => handleItemAction(id, 'folder', action)}
-              view={view}
-            />
-          : <NoteBlock
-              key={item.id}
-              data={item as NoteItem}
-              onClick={() => navigate(`/notes/${item.id}?view=${view}`)}
-              onAction={(id, action) => handleItemAction(id, 'note', action)}
-              view={view}
-            />
-      )}
-
-      <CreateModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onCreate={handleCreate}
-      />
+      </div>
     </div>
   );
 };
