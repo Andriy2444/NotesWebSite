@@ -53,6 +53,16 @@ export class NotesController {
     });
   }
 
+  @Get('calendar')
+  @ApiOperation({ summary: 'Get notes for calendar' })
+  calendar(
+    @Req() req: AuthRequest,
+    @Query('year') year: string,
+    @Query('month') month: string,
+  ) {
+    return this.notesService.calendar(req.user.id, +year, +month);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get note by id' })
   @ApiParam({ name: 'id', description: 'Note ID' })
@@ -75,11 +85,5 @@ export class NotesController {
   @ApiOperation({ summary: 'Permanently delete note' })
   delete(@Req() req: AuthRequest, @Param('id') id: string) {
     return this.notesService.delete(req.user.id, id);
-  }
-
-  @Get('calendar')
-  @ApiOperation({ summary: 'Get notes for calendar' })
-  calendar(@Req() req: AuthRequest) {
-    return this.notesService.calendar(req.user.id);
   }
 }

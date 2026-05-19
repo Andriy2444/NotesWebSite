@@ -125,14 +125,46 @@ export class NotesService {
     return this.prisma.note.delete({ where: { id } });
   }
 
-  async calendar(userId: string) {
-    return this.prisma.note.findMany({
-      where: { userId, deletedAt: null },
-      select: {
-        id: true,
-        title: true,
-        noteDate: true,
+  async calendar(userId: string, year: number, month: number) {
+    const startDate = new Date(year, month - 1, 1);
+    const endDate = new Date(year, month, 1);
+
+    const filter = {
+      userId,
+      deletedAt: null,
+      createdAt: {
+        gte: startDate,
+        lt: endDate,
       },
-    });
+    };
+
+    const [notes, folders] = await Promise.all([
+      this.prisma.note.findMany({
+        where: filter,
+        select: { id: true, title: true, createdAt: true },
+      }),
+      this.prisma.folder.findMany({
+        where: filter,
+        select: { id: true, name: true, createdAt: true },
+      }),
+    ]);
+
+    const mappedNotes = notes.map((note) => ({
+      id: note.id,
+      title: note.title,
+      createdAt: note.createdAt,
+      type: 'note' as const,
+    }));
+
+    const mappedFolders = folders.map((folder) => ({
+      id: folder.id,
+      title: folder.name,
+      createdAt: folder.createdAt,
+      type: 'folder' as const,
+    }));
+
+    return [...mappedNotes, ...mappedFolders].sort(
+      (a, b) => a.createdAt.getTime() - b.createdAt.getTime(),
+    );
   }
 }
