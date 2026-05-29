@@ -49,6 +49,7 @@
 }
 
 .search-trigger-btn, .mobile-back-btn {
+    color: var(--color-purple);
     background: none;
     border: none;
     padding: 0;
@@ -98,7 +99,7 @@
     padding: 0 6px;
     width: 40px;
     height: 30px;
-    background: #0B0E14;
+    background: var(--color-bg-dark);
     border-radius: 100px;
     cursor: pointer;
     transition: background-color 0.3s ease;
@@ -107,7 +108,7 @@
 .switch-handle {
     width: 20px;
     height: 20px;
-    background: #A855F7;
+    background: var(--color-purple);
     border-radius: 50%;
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }

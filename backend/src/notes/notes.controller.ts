@@ -46,10 +46,12 @@ export class NotesController {
     @Req() req: AuthRequest,
     @Query('folderId') folderId?: string,
     @Query('view') view?: 'all' | 'favorites' | 'archive' | 'trash',
+    @Query('space') space?: 'private' | 'shared',
   ) {
     return this.notesService.findAll(req.user.id, {
       folderId,
       view,
+      space: space || 'private',
     });
   }
 
@@ -79,6 +81,31 @@ export class NotesController {
     @Body() dto: UpdateNoteDto,
   ) {
     return this.notesService.update(req.user.id, id, dto);
+  }
+
+  @Get(':id/versions')
+  async getVersions(@Req() req: AuthRequest, @Param('id') id: string) {
+    return this.notesService.getVersions(req.user.id, id);
+  }
+
+  @Post(':id/versions/:versionId/restore')
+  @ApiOperation({ summary: 'Restore note to a specific version' })
+  restoreVersion(
+    @Req() req: AuthRequest,
+    @Param('id') id: string,
+    @Param('versionId') versionId: string,
+  ) {
+    return this.notesService.restoreVersion(req.user.id, id, versionId);
+  }
+
+  @Delete(':id/versions/:versionId')
+  @ApiOperation({ summary: 'Delete a specific version' })
+  deleteVersion(
+    @Req() req: AuthRequest,
+    @Param('id') id: string,
+    @Param('versionId') versionId: string,
+  ) {
+    return this.notesService.deleteVersion(req.user.id, id, versionId);
   }
 
   @Delete(':id')

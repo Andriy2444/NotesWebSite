@@ -49,7 +49,7 @@ function CalendarPage() {
 
         setCalendarData(grouped);
       } catch (error) {
-        console.error("Не вдалося завантажити дані календаря:", error);
+        console.error("Don't visit to download calendar data:", error);
       }
     };
     fetchCalendarData();

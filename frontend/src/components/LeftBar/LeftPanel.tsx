@@ -1,5 +1,5 @@
 import React from 'react';
-import {Bookmark, Archive, Calendar, LayoutGrid, Trash2} from 'lucide-react';
+import {Bookmark, Archive, Calendar, LayoutGrid, Trash2, Users} from 'lucide-react';
 import './LeftPanel.css';
 import { useNavigate, useLocation } from "react-router-dom";
 
@@ -19,6 +19,7 @@ const menuItems = [
   { id: 'archive', label: 'Archive', icon: Archive, href: '/?view=archive' },
   { id: 'trash', label: 'Trash', icon: Trash2, href: '/?view=trash' },
   { id: 'calendar', label: 'Calendar', icon: Calendar, href: '/calendar' },
+  { id: 'shared', label: 'Shared', icon: Users, href: '/shared' },
 ];
 
   const getActiveItem = () => {
@@ -26,7 +27,7 @@ const menuItems = [
     const view = new URLSearchParams(location.search).get('view') || 'all';
 
     if (path.startsWith('/calendar')) return 'calendar';
-    if (path.startsWith('/folders')) return 'all-items';
+    if (path.startsWith('/shared')) return 'shared';
 
     switch (view) {
       case 'favorites': return 'favorites';

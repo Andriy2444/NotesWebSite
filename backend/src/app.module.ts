@@ -7,6 +7,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { FoldersModule } from './folders/folders.module';
 import { NotesModule } from './notes/notes.module';
 import { SettingsModule } from './settings/settings.module';
+import { ShareModule } from './share/share.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { SettingsModule } from './settings/settings.module';
     FoldersModule,
     NotesModule,
     SettingsModule,
+    ShareModule,
   ],
   controllers: [AppController],
   providers: [AppService],

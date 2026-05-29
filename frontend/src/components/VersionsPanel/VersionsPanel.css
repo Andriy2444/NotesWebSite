@@ -1,0 +1,104 @@
+.versions-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--color-overlay-dark);
+  z-index: 100;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.versions-panel {
+  width: 300px;
+  height: 100%;
+  background: var(--color-bg-surface);
+  border-left: 1px solid var(--color-white-25);
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  gap: 12px;
+  overflow-y: auto;
+}
+
+.versions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--color-purple);
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.versions-header button {
+  background: none;
+  border: none;
+  color: var(--color-white);
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.versions-header button:hover {
+  opacity: 1;
+}
+
+.versions-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.version-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--color-surface-20);
+  border: 1px solid var(--color-white-25);
+}
+
+.version-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.version-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-white);
+}
+
+.version-date {
+  font-size: 11px;
+  color: var(--color-white-50);
+}
+
+.version-restore-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: 1px solid var(--color-purple);
+  color: var(--color-purple);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+
+.version-restore-btn:hover {
+  background: var(--color-surface-60);
+}
+
+.versions-empty {
+  color: var(--color-white-50);
+  font-size: 13px;
+  text-align: center;
+  margin-top: 24px;
+}

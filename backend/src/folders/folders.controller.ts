@@ -49,10 +49,12 @@ export class FoldersController {
     @Req() req: AuthRequest,
     @Query('parentId') parentId?: string,
     @Query('view') view?: 'all' | 'favorites' | 'archive' | 'trash',
+    @Query('space') space?: 'private' | 'shared',
   ) {
     return this.foldersService.findAll(req.user.id, {
       parentId,
       view,
+      space: space || 'private',
     });
   }
 

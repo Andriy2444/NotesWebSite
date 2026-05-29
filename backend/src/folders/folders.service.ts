@@ -7,7 +7,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateFolderDto } from './dto/create-folder.dto';
 import { UpdateFolderDto } from './dto/update-folder.dto';
-import { Prisma } from '@prisma/client';
+import { Prisma, SpaceType } from '@prisma/client';
 
 @Injectable()
 export class FoldersService {
@@ -26,11 +26,22 @@ export class FoldersService {
       throw new ConflictException('Folder with this name already exists');
     }
 
+    let spaceType: SpaceType = SpaceType.PRIVATE;
+    if (dto.parentId) {
+      const parentFolder = await this.prisma.folder.findUnique({
+        where: { id: dto.parentId },
+      });
+      if (parentFolder?.spaceType === 'SHARED') {
+        spaceType = 'SHARED';
+      }
+    }
+
     return this.prisma.folder.create({
       data: {
         name: dto.name,
         parentId: dto.parentId ?? null,
         userId,
+        spaceType,
       },
     });
   }
@@ -40,9 +51,37 @@ export class FoldersService {
     filters: {
       parentId?: string;
       view?: 'all' | 'favorites' | 'archive' | 'trash';
+      space?: 'private' | 'shared';
     },
   ) {
-    const where: Prisma.FolderWhereInput = { userId };
+    const isShared = filters.space === 'shared';
+
+    if (isShared) {
+      return this.prisma.folder.findMany({
+        where: {
+          OR: [
+            { userId: userId, spaceType: 'SHARED' },
+            { sharedWith: { some: { userId: userId } } },
+          ],
+          deletedAt: null,
+          isArchived: false,
+          ...(filters.parentId && filters.parentId !== 'null'
+            ? { parentId: filters.parentId }
+            : { parentId: null }), // ← фікс — показуємо тільки папки верхнього рівня
+        },
+        include: {
+          _count: { select: { notes: true } },
+          sharedWith: {
+            include: {
+              user: { select: { id: true, username: true, email: true } },
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+    }
+
+    const where: Prisma.FolderWhereInput = { userId, spaceType: 'PRIVATE' };
 
     if (filters.parentId === 'null') {
       where.parentId = null;
@@ -59,17 +98,14 @@ export class FoldersService {
       case 'trash':
         where.deletedAt = { not: null };
         break;
-
       case 'archive':
         where.deletedAt = null;
         where.isArchived = true;
         break;
-
       case 'favorites':
         where.deletedAt = null;
         where.isFavorite = true;
         break;
-
       case 'all':
       default:
         where.deletedAt = null;
@@ -85,9 +121,17 @@ export class FoldersService {
   }
 
   async findFolderNotes(userId: string, folderId: string) {
+    const folder = await this.prisma.folder.findFirst({
+      where: {
+        id: folderId,
+        OR: [{ userId }, { sharedWith: { some: { userId } } }],
+      },
+    });
+
+    if (!folder) throw new ForbiddenException('Access denied');
+
     return this.prisma.note.findMany({
       where: {
-        userId,
         folderId,
         deletedAt: null,
       },

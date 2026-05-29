@@ -1,0 +1,168 @@
+.share-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+}
+
+.share-modal-card {
+    background: var(--color-overlay-dark);
+    border: 1px solid var(--color-white-25);
+    backdrop-filter: blur(20px);
+    border-radius: 25px;
+    padding: 30px;
+    min-width: 340px;
+    max-width: 440px;
+    width: 90%;
+    color: var(--color-white);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.share-modal-h3 {
+    margin: 0 0 20px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--color-white);
+}
+
+.share-modal-section-title {
+    font-size: 14px;
+    color: var(--color-white);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0 0 10px 0;
+}
+
+.share-modal-list {
+    margin-bottom: 24px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.share-modal-user-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.share-modal-user-row:last-child {
+    border-bottom: none;
+}
+
+.share-modal-email {
+    flex: 1;
+    font-size: 14px;
+    color: var(--color-white);
+}
+
+.share-modal-form-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.share-modal-input {
+    flex: 1;
+    background: var(--color-bg-dark);
+    border: 1px solid var(--color-white-25);
+    border-radius: 10px;
+    padding: 10px 14px;
+    color: var(--color-white);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.share-modal-input:focus {
+    border-color: var(--color-purple, #a855f7);
+}
+
+.share-modal-select {
+    background: var(--color-bg-dark);
+    border: 1px solid var(--color-white-25);
+    border-radius: 10px;
+    padding: 10px 12px;
+    color: var(--color-white);
+    font-size: 14px;
+    outline: none;
+    cursor: pointer;
+}
+
+.share-modal-select:focus {
+    border-color: var(--color-purple, #a855f7);
+}
+
+.share-modal-role-badge {
+    font-size: 12px;
+    padding: 4px 10px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--color-white-25);
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.share-modal-revoke-btn {
+    font-size: 13px;
+    color: #ff4d4d;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+
+.share-modal-revoke-btn:hover {
+    background: rgba(255, 77, 77, 0.1);
+}
+
+.share-modal-primary-btn {
+    width: 100%;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 12px;
+    background: var(--color-purple, #a855f7);
+    border: none;
+    border-radius: 12px;
+    color: var(--color-white);
+    cursor: pointer;
+    transition: transform 0.1s, opacity 0.2s;
+}
+
+.share-modal-primary-btn:hover:not(:disabled) {
+    opacity: 0.9;
+}
+
+.share-modal-primary-btn:active:not(:disabled) {
+    transform: scale(0.98);
+}
+
+.share-modal-primary-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.share-modal-close-btn {
+    margin-top: 16px;
+    width: 100%;
+    font-size: 14px;
+    background: transparent;
+    border: 1px solid var(--color-white-25);
+    border-radius: 12px;
+    padding: 10px;
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.6);
+    transition: all 0.2s;
+}
+
+.share-modal-close-btn:hover {
+    color: var(--color-white);
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.4);
+}

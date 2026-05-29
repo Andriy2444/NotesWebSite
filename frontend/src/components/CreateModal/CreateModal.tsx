@@ -25,7 +25,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({ isOpen, onClose, onCre
 
 	return (
 		<div className="modal-overlay" onClick={onClose}>
-			<div className="modal-content card-box note-variant" onClick={e => e.stopPropagation()}>
+			<div className="modal-content card-box" onClick={e => e.stopPropagation()}>
 				<button className="modal-close-btn" onClick={onClose}><X size={24} /></button>
 
 				<h2 className="modal-title">Create New Item</h2>

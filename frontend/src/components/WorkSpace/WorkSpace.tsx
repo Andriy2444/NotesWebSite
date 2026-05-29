@@ -1,9 +1,11 @@
 import React, {useEffect, useState} from 'react';
 import {api} from '../../api.ts';
 import {useLocation, useNavigate, useParams} from 'react-router-dom';
-import {MoreVertical, Folder as FolderIcon, ArrowLeft, Star, Archive, Trash2, RotateCcw, SlidersHorizontal} from 'lucide-react';
+import {MoreVertical, Folder as FolderIcon, ArrowLeft, Star, Archive, Trash2, RotateCcw, SlidersHorizontal, Share2 } from 'lucide-react';
 import './WorkSpace.css';
 import {CreateModal} from "../CreateModal/CreateModal.tsx";
+import {type Role, type ShareableItem, type SharedUser, ShareModal} from "../ShareModal/ShareModal.tsx";
+import "../../pages/Shared/SharedPage.css";
 
 interface Tag {
   tag: { name: string };
@@ -18,6 +20,8 @@ interface NoteItem {
   createdAt: string;
   updatedAt?: string;
   isFavorite?: boolean;
+  userId: string;
+  sharedWith?: SharedUser[];
   tags: Tag[];
   type: 'note';
 }
@@ -28,16 +32,20 @@ interface FolderItem {
   createdAt: string;
   isFavorite?: boolean;
   _count?: { notes: number };
+  userId: string;
+  sharedWith?: SharedUser[];
   type: 'folder';
 }
 
-type ItemAction = 'favorite' | 'archive' | 'unarchive' | 'trash' | 'restore' | 'delete';
+type ItemAction = 'favorite' | 'archive' | 'unarchive' | 'trash' | 'restore' | 'delete' | 'share';
 type WorkspaceItem = (NoteItem | FolderItem) & { isFavorite?: boolean };
 
 interface MoreMenuProps {
   onAction: (action: ItemAction) => void;
   isFavorite?: boolean;
   view: string;
+  isShared?: boolean;
+  isOwner?: boolean;
 }
 
 interface ConfirmModalProps {
@@ -60,8 +68,10 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({ title, message, onConfirm, 
   </div>
 );
 
-const MoreMenu: React.FC<MoreMenuProps> = ({ onAction, isFavorite, view }) => {
+const MoreMenu: React.FC<MoreMenuProps> = ({ onAction, isFavorite, view, isShared, isOwner }) => {
   const [isOpen, setIsOpen] = useState(false);
+
+   if (isShared && !isOwner) return null;
 
   const handleAction = (e: React.MouseEvent, action: ItemAction) => {
     e.stopPropagation();
@@ -105,18 +115,26 @@ const MoreMenu: React.FC<MoreMenuProps> = ({ onAction, isFavorite, view }) => {
               </>
             ) : (
               <>
-                <div className="menu-item" onClick={(e) => handleAction(e, 'favorite')}>
-                  <Star size={16} fill={isFavorite ? "var(--color-purple)" : "none"} color={isFavorite ? "var(--color-purple)" : "currentColor"} />
-                  {isFavorite ? 'Unfavorite' : 'Favorite'}
-                </div>
-                <div className="menu-item" onClick={(e) => handleAction(e, 'archive')}>
-                  <Archive size={16} />
-                  Archive
-                </div>
-                <div className="menu-item delete" onClick={(e) => handleAction(e, 'trash')}>
-                  <Trash2 size={16} />
-                  Move to Trash
-                </div>
+                {(!isShared || isOwner) && (
+                  <>
+                    <div className="menu-item" onClick={(e) => handleAction(e, 'favorite')}>
+                      <Star size={16} fill={isFavorite ? "var(--color-purple)" : "none"} color={isFavorite ? "var(--color-purple)" : "currentColor"} />
+                      {isFavorite ? 'Unfavorite' : 'Favorite'}
+                    </div>
+                    <div className="menu-item" onClick={(e) => handleAction(e, 'archive')}>
+                      <Archive size={16} />
+                      Archive
+                    </div>
+                    <div className="menu-item delete" onClick={(e) => handleAction(e, 'trash')}>
+                      <Trash2 size={16} />
+                      Move to Trash
+                    </div>
+                    <div className="menu-item" onClick={(e) => handleAction(e, 'share')}>
+                      <Share2 size={16} />
+                      Share
+                    </div>
+                  </>
+                )}
               </>
             )}
           </div>
@@ -131,15 +149,23 @@ const NoteBlock: React.FC<{
   onClick: () => void;
   onAction: (id: string, action: ItemAction) => void;
   view: string;
-}> = ({ data, onClick, onAction, view }) => {
+  isShared?: boolean;
+  isOwner?: boolean;
+}> = ({ data, onClick, onAction, view, isShared, isOwner}) => {
   const dateStr = data.noteDate
     ? new Date(data.noteDate).toLocaleDateString('uk-UA')
     : 'No data';
 
   return (
     <div className="card-box note-variant" onClick={onClick} style={{ cursor: 'pointer' }}>
-      <MoreMenu onAction={(action) => onAction(data.id, action)} isFavorite={data.isFavorite} view={view} />
-      <h2 className="card-title">{data.title}</h2>
+      <MoreMenu
+        onAction={(action) => onAction(data.id, action)}
+        isFavorite={data.isFavorite}
+        view={view}
+        isShared={isShared}
+        isOwner={isOwner}
+      />
+      <h2 className="card-title" title={data.title}>{data.title}</h2>
       <div className="card-text-content" dangerouslySetInnerHTML={{ __html: data.content }} />
       <div className="card-meta-block">
         <span>📅 {dateStr}</span>
@@ -157,12 +183,20 @@ const FolderBlock: React.FC<{
   onClick: () => void;
   onAction: (id: string, action: ItemAction) => void;
   view: string;
-}> = ({ data, onClick, onAction, view }) => (
+  isShared?: boolean;
+  isOwner?: boolean;
+}> = ({ data, onClick, onAction, view, isShared, isOwner }) => (
   <div className="card-box folder-variant" onClick={onClick} style={{ cursor: 'pointer' }}>
-    <MoreMenu onAction={(action) => onAction(data.id, action)} isFavorite={data.isFavorite} view={view} />
+    <MoreMenu
+      onAction={(action) => onAction(data.id, action)}
+      isFavorite={data.isFavorite}
+      view={view}
+      isShared={isShared}
+      isOwner={isOwner}
+    />
     <div className="folder-icon-area">
       <FolderIcon size={60} color="var(--color-purple)" fill="rgba(168, 85, 247, 0.2)"/>
-      <h2 className="card-title">{data.name}</h2>
+      <h2 className="card-title" title={data.name}>{data.name}</h2>
     </div>
     <div className="card-meta-block">
       <span>📅 {new Date(data.createdAt).toLocaleDateString('uk-UA')}</span>
@@ -183,6 +217,10 @@ export const WorkSpace: React.FC<{ searchQuery: string }> = ({ searchQuery }) =>
   const navigate = useNavigate();
   const { folderId } = useParams<{ folderId: string }>();
   const view = new URLSearchParams(location.search).get('view') || 'all';
+  const [shareTarget, setShareTarget] = useState<ShareableItem | null>(null);
+  const [currentUserId, setCurrentUserId] = useState("");
+  const space = new URLSearchParams(location.search).get('space') || '';
+
 
   const fetchWorkspaceData = async () => {
     setLoading(true);
@@ -190,8 +228,8 @@ export const WorkSpace: React.FC<{ searchQuery: string }> = ({ searchQuery }) =>
       const scope = folderId ?? (view === 'all' ? 'null' : undefined);
 
       const [notesRes, foldersRes] = await Promise.all([
-        api.get<NoteItem[]>(`/notes${scope !== undefined ? `?folderId=${scope}&` : '?'}view=${view}`),
-        api.get<FolderItem[]>(`/folders${scope !== undefined ? `?parentId=${scope}&` : '?'}view=${view}`),
+        api.get<NoteItem[]>(`/notes${scope !== undefined ? `?folderId=${scope}&` : '?'}view=${view}${space ? `&space=${space}` : ''}`),
+        api.get<FolderItem[]>(`/folders${scope !== undefined ? `?parentId=${scope}&` : '?'}view=${view}${space ? `&space=${space}` : ''}`),
       ]);
 
       const combined: WorkspaceItem[] = [
@@ -211,6 +249,15 @@ export const WorkSpace: React.FC<{ searchQuery: string }> = ({ searchQuery }) =>
   useEffect(() => {
     fetchWorkspaceData();
   }, [location.pathname, location.search, folderId]);
+
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) return;
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      setCurrentUserId(payload.sub ?? "");
+    } catch { console.error("Failed to parse token"); }
+  }, []);
 
   const handleCreate = async (type: 'note' | 'folder', name: string) => {
     const endpoint = type === 'folder' ? '/folders' : '/notes';
@@ -232,6 +279,20 @@ export const WorkSpace: React.FC<{ searchQuery: string }> = ({ searchQuery }) =>
       if (!item) return;
       const name = 'title' in item ? item.title : item.name;
       setConfirmDelete({ id, type, name });
+      return;
+    }
+
+    if (action === 'share') {
+      const item = items.find(i => i.id === id);
+      if (!item) return;
+      setShareTarget({
+        id: item.id,
+        type: item.type,
+        userId: item.userId ?? "",
+        sharedWith: item.sharedWith,
+        title: 'title' in item ? item.title : undefined,
+        name: 'name' in item ? item.name : undefined,
+      });
       return;
     }
 
@@ -258,6 +319,26 @@ export const WorkSpace: React.FC<{ searchQuery: string }> = ({ searchQuery }) =>
     } catch (err) {
       console.error(err);
     }
+  };
+
+  const handleShare = async (email: string, role: Role) => {
+    if (!shareTarget) return;
+    await api.post(`/share/${shareTarget.type}/${shareTarget.id}`, { email, role });
+    await fetchWorkspaceData();
+  };
+
+  const handleRevoke = async (userId: string) => {
+    if (!shareTarget) return;
+    await api.delete(`/share/${shareTarget.type}/${shareTarget.id}/${userId}`);
+    await fetchWorkspaceData();
+  };
+
+  const handleChangeRole = async (userId: string, role: Role) => {
+    if (!shareTarget) return;
+    const email = shareTarget.sharedWith?.find(s => s.userId === userId)?.user?.email;
+    if (!email) return;
+    await api.post(`/share/${shareTarget.type}/${shareTarget.id}`, { email, role });
+    await fetchWorkspaceData();
   };
 
   const handleConfirmDelete = async () => {
@@ -385,9 +466,11 @@ export const WorkSpace: React.FC<{ searchQuery: string }> = ({ searchQuery }) =>
             ? <FolderBlock
                 key={item.id}
                 data={item as FolderItem}
-                onClick={() => navigate(`/folders/${item.id}?view=${view}`)}
+                onClick={() => navigate(`/folders/${item.id}?view=${view}${space ? `&space=${space}` : ''}`)}  // ← додай space
                 onAction={(id, action) => handleItemAction(id, 'folder', action)}
                 view={view}
+                isShared={!!space}
+                isOwner={item.userId === currentUserId}
               />
             : <NoteBlock
                 key={item.id}
@@ -395,6 +478,8 @@ export const WorkSpace: React.FC<{ searchQuery: string }> = ({ searchQuery }) =>
                 onClick={() => navigate(`/notes/${item.id}?view=${view}`)}
                 onAction={(id, action) => handleItemAction(id, 'note', action)}
                 view={view}
+                isShared={!!space}
+                isOwner={item.userId === currentUserId}
               />
         )}
 
@@ -403,6 +488,16 @@ export const WorkSpace: React.FC<{ searchQuery: string }> = ({ searchQuery }) =>
           onClose={() => setIsModalOpen(false)}
           onCreate={handleCreate}
         />
+        {shareTarget && (
+          <ShareModal
+            item={shareTarget}
+            currentUserId={currentUserId}
+            onClose={() => setShareTarget(null)}
+            onShare={handleShare}
+            onRevoke={handleRevoke}
+            onChangeRole={handleChangeRole}
+          />
+        )}
       </div>
     </div>
   );

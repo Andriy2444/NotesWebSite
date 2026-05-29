@@ -4,6 +4,9 @@ import {useEditor, EditorContent} from '@tiptap/react';
 import TextAlign from '@tiptap/extension-text-align';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
+import TaskList from '@tiptap/extension-task-list'
+import TaskItem from '@tiptap/extension-task-item'
+import Image from '@tiptap/extension-image'
 import {Color} from "@tiptap/extension-text-style";
 import {TextStyle} from '@tiptap/extension-text-style'
 import {api} from '../../api';
@@ -12,8 +15,9 @@ import {LeftPanel} from "../../components/LeftBar/LeftPanel.tsx";
 import {RightPanel} from "../../components/RightPanel/RightPanel.tsx";
 import "./NotePage.css";
 import {Table, TableCell, TableHeader, TableRow} from "@tiptap/extension-table";
-import Link from "@tiptap/extension-link";
-import {ArrowLeft} from "lucide-react";
+import {ArrowLeft, Settings, History } from "lucide-react";
+import { VersionsPanel } from '../../components/VersionsPanel/VersionsPanel';
+
 
 interface NoteData {
   id: string;
@@ -22,6 +26,7 @@ interface NoteData {
   createdAt: string;
   noteDate: string;
   updatedAt: string;
+  role?: 'EDITOR' | 'VIEWER';
 }
 
 const NotePage: React.FC = () => {
@@ -30,6 +35,8 @@ const NotePage: React.FC = () => {
   const [noteData, setNoteData] = useState<NoteData | null>(null);
   const [isRightPanelOpen, setIsRightPanelOpen] = useState(false);
   const navigate = useNavigate();
+  const [isVersionsOpen, setIsVersionsOpen] = useState(false);
+  const isReadOnly = noteData?.role === 'VIEWER';
 
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -48,9 +55,15 @@ const NotePage: React.FC = () => {
       TableRow,
       TableHeader,
       TableCell,
-      Link,
+      TaskList,
+      TaskItem.configure({
+        nested: true,
+      }),
+      Image,
+      // Link,
     ],
     content: '',
+    editable: !isReadOnly,
     onUpdate: ({editor}) => {
       handleAutoSave(editor.getHTML());
     },
@@ -59,20 +72,27 @@ const NotePage: React.FC = () => {
   });
 
   const handleAutoSave = useCallback(
-    (content: string) => {
+    (content?: string, title?: string) => {
+      if (isReadOnly) return;
       if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
 
       saveTimeoutRef.current = setTimeout(async () => {
         if (id) {
           try {
-            await api.patch(`/notes/${id}`, {content});
+            const payload: { content?: string; title?: string } = {};
+            if (content !== undefined) payload.content = content;
+            if (title !== undefined) payload.title = title;
+
+            const res = await api.patch<NoteData>(`/notes/${id}`, payload);
+
+            setNoteData(prev => prev ? { ...prev, updatedAt: res.data.updatedAt } : null);
           } catch (err) {
             console.error("Save error:", err);
           }
         }
       }, 700);
     },
-    [id]
+    [id, isReadOnly]
   );
 
   const fetchNote = useCallback(async (noteId: string) => {
@@ -87,11 +107,15 @@ const NotePage: React.FC = () => {
   useEffect(() => {
     if (editor && noteData && !editor.isDestroyed) {
       const currentContent = editor.getHTML();
+      editor.setEditable(noteData.role !== 'VIEWER');
+
       if (currentContent === '<p></p>' || currentContent === '') {
-        editor.commands.setContent(noteData.content || '<p></p>');
+        const sanitized = (noteData.content || '<p></p>')
+          .replace(/#([0-9a-fA-F]{6})FF"/gi, '#$1"');
+        editor.commands.setContent(sanitized);
       }
     }
-  }, [editor, noteData]);
+  }, [editor, noteData?.id]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -105,11 +129,23 @@ const NotePage: React.FC = () => {
   const toggleSidebar = () => setIsSidebarOpen(prev => !prev);
 
   const handleTitleBlur = async () => {
-    if (!id || !noteData) return;
+    if (!id || !noteData || isReadOnly) return;
     try {
       await api.patch(`/notes/${id}`, {title: noteData.title});
     } catch (err) {
       console.error("Title save error:", err);
+    }
+  };
+
+  const handleRestoreVersion = async (versionId: string) => {
+    if (!id) return;
+    try {
+      const res = await api.post<NoteData>(`/notes/${id}/versions/${versionId}/restore`);
+      setNoteData(res.data);
+      editor?.commands.setContent(res.data.content || '<p></p>');
+      setIsVersionsOpen(false);
+    } catch (err) {
+      console.error('Restore error:', err);
     }
   };
 
@@ -132,6 +168,12 @@ const NotePage: React.FC = () => {
                   <ArrowLeft size={20}/>
                   <span>Back</span>
                 </button>
+                {!isReadOnly && (
+                  <button className="back-button" onClick={() => setIsVersionsOpen(true)}>
+                    <History size={18} />
+                    <span>History</span>
+                  </button>
+                )}
                 <div className="note-info">
                   <span>
                     Date: {noteData?.noteDate
@@ -143,6 +185,19 @@ const NotePage: React.FC = () => {
                   </span>
                 </div>
               </div>
+              {isReadOnly && (
+                <div style={{
+                  padding: '6px 12px',
+                  background: 'rgba(168, 85, 247, 0.1)',
+                  border: '1px solid var(--color-purple)',
+                  borderRadius: '8px',
+                  fontSize: '13px',
+                  color: 'var(--color-purple)',
+                  marginBottom: '8px'
+                }}>
+                  👁 View only
+                </div>
+              )}
               <div className="note-content-scrollable">
 
                 <div className="note-header">
@@ -151,8 +206,11 @@ const NotePage: React.FC = () => {
                     placeholder="Untitled"
                     rows={1}
                     value={noteData?.title ?? ""}
+                    readOnly={isReadOnly}
                     onChange={e => {
-                      setNoteData(prev => prev ? {...prev, title: e.target.value} : prev);
+                      const newTitle = e.target.value;
+                      setNoteData(prev => prev ? { ...prev, title: newTitle } : prev);
+                      handleAutoSave(editor?.getHTML(), newTitle);
                       e.target.style.height = 'auto';
                       e.target.style.height = `${e.target.scrollHeight}px`;
                     }}
@@ -168,16 +226,27 @@ const NotePage: React.FC = () => {
                 <EditorContent editor={editor} className="tiptap-renderer"/>
               </div>
             </div>
-            <button
-              className="right-panel-toggle"
-              onClick={() => setIsRightPanelOpen(prev => !prev)}
-            >
-              f
-            </button>
-            <RightPanel editor={editor} isOpen={isRightPanelOpen}/>
+            {!isReadOnly && (
+              <>
+                <button
+                  className="right-panel-toggle"
+                  onClick={() => setIsRightPanelOpen(prev => !prev)}
+                >
+                  <Settings size={30} />
+                </button>
+                <RightPanel editor={editor} isOpen={isRightPanelOpen} />
+              </>
+            )}
           </div>
         </main>
       </div>
+      {isVersionsOpen && id && (
+        <VersionsPanel
+          noteId={id}
+          onRestore={handleRestoreVersion}
+          onClose={() => setIsVersionsOpen(false)}
+        />
+      )}
     </div>
   );
 };

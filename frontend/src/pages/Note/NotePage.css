@@ -1,7 +1,6 @@
 .note-layout-container {
     display: flex;
     align-items: stretch;
-    gap: 30px;
     padding: 50px 0 50px 50px;
     height: calc(100vh - 75px);
     box-sizing: border-box;
@@ -23,6 +22,7 @@
     isolation: isolate;
     border-radius: 25px;
     box-sizing: border-box;
+    margin-right: 50px;
 }
 
 .note-content-scrollable {
@@ -265,4 +265,34 @@
     color: var(--color-purple);
     text-decoration: underline;
     cursor: pointer;
+}
+
+.tiptap ul[data-type="taskList"] {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+}
+
+.tiptap li[data-type="taskItem"] {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.tiptap li[data-type="taskItem"] > label {
+  margin-right: 0.75rem;
+  user-select: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.tiptap li[data-type="taskItem"] > div {
+  margin: 0;
+  flex: 1;
+}
+
+.tiptap li[data-type="taskItem"][data-checked="true"] > div {
+  text-decoration: line-through;
+  opacity: 0.6;
 }

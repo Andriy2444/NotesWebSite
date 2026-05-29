@@ -4,7 +4,8 @@ import type {Level} from '@tiptap/extension-heading';
 import {
   Bold, Italic, Strikethrough, Code, Edit2,
   AlignCenter, AlignLeft, AlignRight, AlignJustify,
-  List, Table, Link as LinkIcon, ChevronDown
+  List, Table, Link as LinkIcon, ChevronDown,
+  SquareCheckBig, Image
 } from 'lucide-react';
 import './RightPanel.css';
 import '@tiptap/extension-text-align';
@@ -61,7 +62,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({ editor, isOpen  }) => {
   };
 
   const handleColorChange = (e: React.FormEvent<HTMLInputElement>) => {
-    const newColor = e.currentTarget.value;
+    const newColor = e.currentTarget.value.slice(0, 7);
     editor.chain().focus().setColor(newColor).run();
     setActiveMenu(null);
   };
@@ -165,7 +166,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({ editor, isOpen  }) => {
             type="color"
             ref={colorInputRef}
             onInput={handleColorChange}
-            value={editor.getAttributes('textStyle').color || '#A855F7FF'}
+            value={(editor.getAttributes('textStyle').color || '#A855F7').slice(0, 7)}
             style={{ display: 'none' }}
           />
         </div>
@@ -194,6 +195,13 @@ export const RightPanel: React.FC<RightPanelProps> = ({ editor, isOpen  }) => {
           onClick={() => editor.chain().focus().toggleBulletList().run()}
         >
           <List size={20} />
+        </button>
+
+        <button
+          className={`panel-btn ${editor.isActive('taskList') ? 'active' : ''}`}
+          onClick={() => editor.chain().focus().toggleTaskList().run()}
+        >
+          <SquareCheckBig size={20} />
         </button>
 
         <div className="menu-wrapper">
@@ -239,7 +247,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({ editor, isOpen  }) => {
         </div>
 
         <button
-          className={`panel-btn last ${editor.isActive('link') ? 'active' : ''}`}
+          className={`panel-btn ${editor.isActive('link') ? 'active' : ''}`}
           onClick={() => {
             const previousUrl = editor.getAttributes('link').href;
             const url = window.prompt('URL:', previousUrl);
@@ -255,6 +263,17 @@ export const RightPanel: React.FC<RightPanelProps> = ({ editor, isOpen  }) => {
           }}
         >
           <LinkIcon size={18} />
+        </button>
+        <button
+          className="panel-btn last"
+          onClick={() => {
+            const url = window.prompt('Enter the image URL:');
+            if (url) {
+              editor.chain().focus().setImage({ src: url }).run();
+            }
+          }}
+        >
+          <Image size={20} />
         </button>
       </div>
     </aside>

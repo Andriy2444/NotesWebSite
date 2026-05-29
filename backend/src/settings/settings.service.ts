@@ -20,7 +20,6 @@ export class SettingsService {
     });
   }
 
-  // Оновити конкретне поле (наприклад, тему)
   async updateTheme(userId: string, theme: string) {
     return this.prisma.userSettings.update({
       where: { userId },

@@ -40,7 +40,7 @@ export const TopBar: React.FC<TopBarProps> = ({ onToggleMenu, onSearchChange  })
         <div className={`search-bar ${isSearchOpen ? 'expanded' : ''}`}>
           {isSearchOpen && (
             <button className="mobile-back-btn" onClick={() => setIsSearchOpen(false)}>
-              <ChevronLeft size={24} color="#A855F7" />
+              <ChevronLeft size={24} color={"var(--color-purple)"} />
             </button>
           )}
 
@@ -58,14 +58,14 @@ export const TopBar: React.FC<TopBarProps> = ({ onToggleMenu, onSearchChange  })
                 size={20}
                 className="cursor-pointer"
                 onClick={() => {setSearchValue(''); onSearchChange('');}}
-                color="#A855F7"
+                color={"var(--color-purple)"}
               />
             )}
             <button
               className="search-trigger-btn"
               onClick={() => window.innerWidth <= 768 && setIsSearchOpen(true)}
             >
-              <Search size={20} color="#A855F7" />
+              <Search size={20} color={"var(--color-purple)"} />
             </button>
           </div>
         </div>
