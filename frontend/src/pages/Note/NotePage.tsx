@@ -73,7 +73,7 @@ const NotePage: React.FC = () => {
 
   const handleAutoSave = useCallback(
     (content?: string, title?: string) => {
-      if (isReadOnly) return;
+      if (isReadOnly || isRemoteUpdate.current) return;
       if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
 
       saveTimeoutRef.current = setTimeout(async () => {
@@ -116,6 +116,51 @@ const NotePage: React.FC = () => {
       }
     }
   }, [editor, noteData?.id]);
+
+  const wsRef = useRef<WebSocket | null>(null);
+  const isRemoteUpdate = useRef(false);
+
+  useEffect(() => {
+    if (!id) return;
+
+    const token = localStorage.getItem('accessToken');
+    const ws = new WebSocket(`ws://localhost:3000/ws?noteId=${id}&token=${token}`);
+    wsRef.current = ws;
+
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data) as {
+        type: string;
+        content?: string;
+        title?: string;
+        updatedAt?: string;
+      };
+
+      if (data.type === 'note_updated') {
+        isRemoteUpdate.current = true;
+
+        if (data.content && editor && !editor.isDestroyed) {
+          if (editor.getHTML() !== data.content) {
+            const { from, to } = editor.state.selection;
+            editor.commands.setContent(data.content, { emitUpdate: false });
+            const docSize = editor.state.doc.content.size;
+            if (from <= docSize) {
+              editor.commands.setTextSelection({ from, to: Math.min(to, docSize) });
+            }
+          }
+        }
+
+        if (data.title) {
+          setNoteData(prev => prev ? { ...prev, title: data.title!, updatedAt: data.updatedAt! } : null);
+        }
+
+        isRemoteUpdate.current = false;
+      }
+    };
+
+    ws.onerror = (e) => console.error('WS error:', e);
+
+    return () => ws.close();
+  }, [id]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect

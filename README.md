@@ -306,8 +306,8 @@ The app uses a **dual-token JWT strategy**:
 
 ```
 ┌──────────┐      login/register      ┌──────────┐
-│  Client  │ ──────────────────────► │  Server  │
-│          │ ◄────────────────────── │          │
+│  Client  │ ───────────────────────► │  Server  │
+│          │ ◄─────────────────────── │          │
 │          │   access token (15m)     │          │
 │          │   refresh token (7d)     │          │
 └──────────┘                          └──────────┘

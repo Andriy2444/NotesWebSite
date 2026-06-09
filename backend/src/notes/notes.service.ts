@@ -7,10 +7,14 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateNoteDto } from './dto/create-note.dto';
 import { UpdateNoteDto } from './dto/update-note.dto';
 import { Prisma } from '@prisma/client';
+import { NotesGateway } from './notes.gateway';
 
 @Injectable()
 export class NotesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private readonly notesGateway: NotesGateway,
+  ) {}
 
   async create(userId: string, dto: CreateNoteDto) {
     return this.prisma.note.create({
@@ -208,10 +212,20 @@ export class NotesService {
       }
     }
 
-    return this.prisma.note.update({
+    const updatedNote = await this.prisma.note.update({
       where: { id },
       data: updateData,
     });
+
+    if (isContentChanged || isTitleChanged) {
+      this.notesGateway.broadcastNoteUpdate(id, {
+        content: updatedNote.content,
+        title: updatedNote.title,
+        updatedAt: updatedNote.updatedAt,
+      });
+    }
+
+    return updatedNote;
   }
 
   async deleteVersion(userId: string, noteId: string, versionId: string) {
