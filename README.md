@@ -349,4 +349,4 @@ Commercial use requires explicit written permission from the author.
 
 See the [LICENSE](LICENSE) file for full terms.
 
-> 📧 Contact: andriy241179@example.com
+> 📧 Contact: andriy241179@gmail.com
