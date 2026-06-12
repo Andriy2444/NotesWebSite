@@ -17,6 +17,7 @@
 	width: 400px;
 	padding: 40px;
 	border: 1px solid var(--color-purple);
+    margin: 0 20px;
 	box-shadow: 0 0 30px rgba(168, 85, 247, 0.2);
 }
 

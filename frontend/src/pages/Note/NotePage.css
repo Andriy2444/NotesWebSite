@@ -69,14 +69,13 @@
     align-items: flex-end;
     font-style: italic;
     font-weight: 300;
-    font-size: 14px; /* Трохи зменшив, щоб краще виглядало в рядку */
+    font-size: 14px;
     color: var(--color-white-25);
     text-align: right;
-    white-space: nowrap; /* Щоб дати не розривалися */
-    padding-top: 10px; /* Невеликий відступ, щоб вирівняти по базовій лінії тексту заголовка */
+    white-space: nowrap;
+    padding-top: 10px;
 }
 
-/* --- SCROLLBAR --- */
 .note-content-scrollable::-webkit-scrollbar {
     width: 6px;
 }
@@ -145,7 +144,6 @@
 @media (max-width: 768px) {
     .note-layout-container {
         flex-direction: column;
-        align-items: center;
         padding: 20px;
     }
 

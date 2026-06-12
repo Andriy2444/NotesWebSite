@@ -15,7 +15,7 @@ import {LeftPanel} from "../../components/LeftBar/LeftPanel.tsx";
 import {RightPanel} from "../../components/RightPanel/RightPanel.tsx";
 import "./NotePage.css";
 import {Table, TableCell, TableHeader, TableRow} from "@tiptap/extension-table";
-import {ArrowLeft, Settings, History } from "lucide-react";
+import {ArrowLeft, History, Palette} from "lucide-react";
 import { VersionsPanel } from '../../components/VersionsPanel/VersionsPanel';
 
 
@@ -288,7 +288,7 @@ const NotePage: React.FC = () => {
                   className="right-panel-toggle"
                   onClick={() => setIsRightPanelOpen(prev => !prev)}
                 >
-                  <Settings size={30} />
+                  <Palette size={30} />
                 </button>
                 <RightPanel editor={editor} isOpen={isRightPanelOpen} />
               </>

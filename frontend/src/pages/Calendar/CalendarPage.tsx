@@ -171,7 +171,7 @@ function CalendarPage() {
                     </div>
                   ))
                 ) : (
-                  <p className="no-items">Немає записів на цей день</p>
+                  <p className="no-items">There are no entries for this day.</p>
                 )}
               </div>
             </div>
