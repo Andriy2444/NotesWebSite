@@ -22,7 +22,7 @@ services:
       DATABASE_URL: ${DATABASE_URL}
     volumes:
       - backend_node_modules:/usr/src/app/node_modules
-
+      - ./backend:/usr/src/app
     working_dir: /usr/src/app
     command: sh -c "npm install --legacy-peer-deps && npx prisma generate && npx prisma migrate deploy && npm run start:dev"
     ports:
@@ -45,7 +45,7 @@ services:
       VITE_BACKEND_URL: http://localhost:${BACKEND_PORT}/api
     volumes:
       - frontend_node_modules:/usr/src/app/node_modules
-
+      - ./frontend:/usr/src/app
     working_dir: /usr/src/app
     command: sh -c "npm install --legacy-peer-deps && npm run dev"
     ports:

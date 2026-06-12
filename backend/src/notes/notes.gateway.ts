@@ -25,8 +25,11 @@ export class NotesGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const token = params.get('token');
 
     try {
-      jwt.verify(token!, process.env.JWT_SECRET || 'super-secret-key');
-    } catch {
+      const decoded = jwt.verify(
+        token!,
+        process.env.JWT_SECRET || 'super-secret-key',
+      );
+    } catch (e) {
       client.close(1008, 'Unauthorized');
       return;
     }

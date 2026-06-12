@@ -305,22 +305,27 @@ export class NotesService {
     const startDate = new Date(year, month - 1, 1);
     const endDate = new Date(year, month, 1);
 
-    const filter = {
-      userId,
-      deletedAt: null,
-      createdAt: {
-        gte: startDate,
-        lt: endDate,
-      },
-    };
-
     const [notes, folders] = await Promise.all([
       this.prisma.note.findMany({
-        where: filter,
-        select: { id: true, title: true, createdAt: true },
+        where: {
+          userId,
+          deletedAt: null,
+          noteDate: {
+            gte: startDate,
+            lt: endDate,
+          },
+        },
+        select: { id: true, title: true, noteDate: true },
       }),
       this.prisma.folder.findMany({
-        where: filter,
+        where: {
+          userId,
+          deletedAt: null,
+          createdAt: {
+            gte: startDate,
+            lt: endDate,
+          },
+        },
         select: { id: true, name: true, createdAt: true },
       }),
     ]);
@@ -328,7 +333,7 @@ export class NotesService {
     const mappedNotes = notes.map((note) => ({
       id: note.id,
       title: note.title,
-      createdAt: note.createdAt,
+      createdAt: note.noteDate,
       type: 'note' as const,
     }));
 
@@ -340,7 +345,7 @@ export class NotesService {
     }));
 
     return [...mappedNotes, ...mappedFolders].sort(
-      (a, b) => a.createdAt.getTime() - b.createdAt.getTime(),
+      (a, b) => (a.createdAt?.getTime() ?? 0) - (b.createdAt?.getTime() ?? 0),
     );
   }
 }

@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {api} from '../../api.ts';
 import {useLocation, useNavigate, useParams} from 'react-router-dom';
 import {MoreVertical, Folder as FolderIcon, ArrowLeft, Star, Archive, Trash2, RotateCcw, SlidersHorizontal, Share2 } from 'lucide-react';
@@ -6,6 +6,7 @@ import './WorkSpace.css';
 import {CreateModal} from "../CreateModal/CreateModal.tsx";
 import {type Role, type ShareableItem, type SharedUser, ShareModal} from "../ShareModal/ShareModal.tsx";
 import "../../pages/Shared/SharedPage.css";
+import { Calendar } from 'lucide-react';
 
 interface Tag {
   tag: { name: string };
@@ -37,15 +38,17 @@ interface FolderItem {
   type: 'folder';
 }
 
-type ItemAction = 'favorite' | 'archive' | 'unarchive' | 'trash' | 'restore' | 'delete' | 'share';
+type ItemAction = 'favorite' | 'archive' | 'unarchive' | 'trash' | 'restore' | 'delete' | 'share' | 'changeDate';
 type WorkspaceItem = (NoteItem | FolderItem) & { isFavorite?: boolean };
 
 interface MoreMenuProps {
-  onAction: (action: ItemAction) => void;
+  onAction: (action: ItemAction, value?: string) => void;
   isFavorite?: boolean;
   view: string;
   isShared?: boolean;
   isOwner?: boolean;
+  noteDate?: string;
+  type?: 'note' | 'folder';
 }
 
 interface ConfirmModalProps {
@@ -68,8 +71,10 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({ title, message, onConfirm, 
   </div>
 );
 
-const MoreMenu: React.FC<MoreMenuProps> = ({ onAction, isFavorite, view, isShared, isOwner }) => {
+const MoreMenu: React.FC<MoreMenuProps> = ({ onAction, isFavorite, view, isShared, isOwner, noteDate, type }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const dateInputRef = useRef<HTMLInputElement>(null);
+  const isPickerOpen = useRef(false);
 
    if (isShared && !isOwner) return null;
 
@@ -87,9 +92,27 @@ const MoreMenu: React.FC<MoreMenuProps> = ({ onAction, isFavorite, view, isShare
       >
         <MoreVertical size={20}/>
       </button>
+
+      <input
+        ref={dateInputRef}
+        type="date"
+        style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', width: 0, height: 0 }}
+        defaultValue={noteDate ? new Date(noteDate).toISOString().split('T')[0] : ''}
+        onFocus={() => { isPickerOpen.current = true; }}
+        onBlur={() => { isPickerOpen.current = false; }}
+        onChange={(e) => {
+          isPickerOpen.current = false;
+          console.log('date changed to', e.target.value);
+          onAction('changeDate', e.target.value);
+          setIsOpen(false);
+        }}
+      />
+
       {isOpen && (
         <>
-          <div className="menu-backdrop" onClick={() => setIsOpen(false)} />
+          <div className="menu-backdrop" onClick={() => {
+            if (!isPickerOpen.current) setIsOpen(false);
+          }} />
           <div className="glass-menu">
             {view === 'trash' ? (
               <>
@@ -133,6 +156,17 @@ const MoreMenu: React.FC<MoreMenuProps> = ({ onAction, isFavorite, view, isShare
                       <Share2 size={16} />
                       Share
                     </div>
+                    {type !== 'folder' && (
+                      <div className="menu-item" onClick={(e) => {
+                        e.stopPropagation();
+                        console.log('click change date, ref=', dateInputRef.current);
+                        isPickerOpen.current = true;
+                        dateInputRef.current?.showPicker();
+                      }}>
+                        <Calendar size={16} />
+                        Change date
+                      </div>
+                    )}
                   </>
                 )}
               </>
@@ -147,7 +181,7 @@ const MoreMenu: React.FC<MoreMenuProps> = ({ onAction, isFavorite, view, isShare
 const NoteBlock: React.FC<{
   data: NoteItem;
   onClick: () => void;
-  onAction: (id: string, action: ItemAction) => void;
+  onAction: (id: string, action: ItemAction, value?: string) => void;
   view: string;
   isShared?: boolean;
   isOwner?: boolean;
@@ -159,11 +193,12 @@ const NoteBlock: React.FC<{
   return (
     <div className="card-box note-variant" onClick={onClick} style={{ cursor: 'pointer' }}>
       <MoreMenu
-        onAction={(action) => onAction(data.id, action)}
+        onAction={(action, value) => onAction(data.id, action, value)}
         isFavorite={data.isFavorite}
         view={view}
         isShared={isShared}
         isOwner={isOwner}
+        noteDate={data.noteDate ?? undefined}
       />
       <h2 className="card-title" title={data.title}>{data.title}</h2>
       <div className="card-text-content" dangerouslySetInnerHTML={{ __html: data.content }} />
@@ -181,18 +216,19 @@ const NoteBlock: React.FC<{
 const FolderBlock: React.FC<{
   data: FolderItem;
   onClick: () => void;
-  onAction: (id: string, action: ItemAction) => void;
+  onAction: (id: string, action: ItemAction, value?: string) => void;
   view: string;
   isShared?: boolean;
   isOwner?: boolean;
 }> = ({ data, onClick, onAction, view, isShared, isOwner }) => (
   <div className="card-box folder-variant" onClick={onClick} style={{ cursor: 'pointer' }}>
     <MoreMenu
-      onAction={(action) => onAction(data.id, action)}
+      onAction={(action, value) => onAction(data.id, action, value)}
       isFavorite={data.isFavorite}
       view={view}
       isShared={isShared}
       isOwner={isOwner}
+      type="folder"
     />
     <div className="folder-icon-area">
       <FolderIcon size={60} color="var(--color-purple)" fill="rgba(168, 85, 247, 0.2)"/>
@@ -273,12 +309,17 @@ export const WorkSpace: React.FC<{ searchQuery: string }> = ({ searchQuery }) =>
     }
   };
 
-  const handleItemAction = async (id: string, type: 'note' | 'folder', action: ItemAction) => {
-    if (action === 'delete') {
-      const item = items.find(i => i.id === id);
-      if (!item) return;
-      const name = 'title' in item ? item.title : item.name;
-      setConfirmDelete({ id, type, name });
+  const handleItemAction = async (id: string, type: 'note' | 'folder', action: ItemAction, value?: string) => {
+    if (action === 'changeDate' && value) {
+      try {
+        const isoDate = new Date(value).toISOString();
+        await api.patch(`/notes/${id}`, { noteDate: isoDate });
+        setItems(prev => prev.map(item =>
+          item.id === id ? { ...item, noteDate: isoDate } : item
+        ));
+      } catch (err) {
+        console.error(err);
+      }
       return;
     }
 
@@ -467,7 +508,7 @@ export const WorkSpace: React.FC<{ searchQuery: string }> = ({ searchQuery }) =>
                 key={item.id}
                 data={item as FolderItem}
                 onClick={() => navigate(`/folders/${item.id}?view=${view}${space ? `&space=${space}` : ''}`)}  // ← додай space
-                onAction={(id, action) => handleItemAction(id, 'folder', action)}
+                onAction={(id, action, value) => handleItemAction(id, 'folder', action, value)}
                 view={view}
                 isShared={!!space}
                 isOwner={item.userId === currentUserId}
@@ -476,7 +517,7 @@ export const WorkSpace: React.FC<{ searchQuery: string }> = ({ searchQuery }) =>
                 key={item.id}
                 data={item as NoteItem}
                 onClick={() => navigate(`/notes/${item.id}?view=${view}`)}
-                onAction={(id, action) => handleItemAction(id, 'note', action)}
+                onAction={(id, action, value) => handleItemAction(id, 'note', action, value)}
                 view={view}
                 isShared={!!space}
                 isOwner={item.userId === currentUserId}

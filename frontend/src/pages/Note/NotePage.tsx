@@ -6,7 +6,7 @@ import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import TaskList from '@tiptap/extension-task-list'
 import TaskItem from '@tiptap/extension-task-item'
-import Image from '@tiptap/extension-image'
+import ResizeImage from 'tiptap-extension-resize-image'
 import {Color} from "@tiptap/extension-text-style";
 import {TextStyle} from '@tiptap/extension-text-style'
 import {api} from '../../api';
@@ -59,7 +59,7 @@ const NotePage: React.FC = () => {
       TaskItem.configure({
         nested: true,
       }),
-      Image,
+      ResizeImage,
       // Link,
     ],
     content: '',
@@ -123,43 +123,54 @@ const NotePage: React.FC = () => {
   useEffect(() => {
     if (!id) return;
 
-    const token = localStorage.getItem('accessToken');
-    const ws = new WebSocket(`ws://localhost:3000/ws?noteId=${id}&token=${token}`);
-    wsRef.current = ws;
+    let ws: WebSocket;
 
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data) as {
-        type: string;
-        content?: string;
-        title?: string;
-        updatedAt?: string;
-      };
+    const connect = () => {
+      const token = localStorage.getItem('accessToken');
+      ws = new WebSocket(`ws://localhost:3000/ws?noteId=${id}&token=${token}`);
+      wsRef.current = ws;
 
-      if (data.type === 'note_updated') {
-        isRemoteUpdate.current = true;
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data) as {
+          type: string;
+          content?: string;
+          title?: string;
+          updatedAt?: string;
+        };
 
-        if (data.content && editor && !editor.isDestroyed) {
-          if (editor.getHTML() !== data.content) {
-            const { from, to } = editor.state.selection;
-            editor.commands.setContent(data.content, { emitUpdate: false });
-            const docSize = editor.state.doc.content.size;
-            if (from <= docSize) {
-              editor.commands.setTextSelection({ from, to: Math.min(to, docSize) });
+        if (data.type === 'note_updated') {
+          isRemoteUpdate.current = true;
+
+          if (data.content && editor && !editor.isDestroyed) {
+            if (editor.getHTML() !== data.content) {
+              const { from, to } = editor.state.selection;
+              editor.commands.setContent(data.content, { emitUpdate: false });
+              const docSize = editor.state.doc.content.size;
+              if (from <= docSize) {
+                editor.commands.setTextSelection({ from, to: Math.min(to, docSize) });
+              }
             }
           }
-        }
 
-        if (data.title) {
-          setNoteData(prev => prev ? { ...prev, title: data.title!, updatedAt: data.updatedAt! } : null);
-        }
+          if (data.title) {
+            setNoteData(prev => prev ? { ...prev, title: data.title!, updatedAt: data.updatedAt! } : null);
+          }
 
-        isRemoteUpdate.current = false;
-      }
+          isRemoteUpdate.current = false;
+        }
+      };
+
+      ws.onclose = (event) => {
+        if (event.code === 1008 || event.code === 1000) return;
+        setTimeout(connect, 3000);
+      };
+
+      ws.onerror = (e) => console.error('WS error:', e);
     };
 
-    ws.onerror = (e) => console.error('WS error:', e);
+    connect();
 
-    return () => ws.close();
+    return () => ws?.close(1000, 'Component unmounted');
   }, [id]);
 
   useEffect(() => {
